@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { quality } from '../lib/quality.js';
 
 
 
@@ -194,10 +195,9 @@ export default class Fluid {
     this.type = THREE.HalfFloatType;
     this.filter = halfLinear ? THREE.LinearFilter : THREE.NearestFilter;
 
-    const lowEnd = (navigator.hardwareConcurrency || 4) <= 4 || window.innerWidth < 700;
-    this.simRes = lowEnd ? 96 : 128;
-    this.dyeRes = lowEnd ? 256 : 512;
-    this.iterations = lowEnd ? 16 : 24;
+    this.simRes = quality.fluid.simRes;
+    this.dyeRes = quality.fluid.dyeRes;
+    this.iterations = quality.fluid.iterations;
     this.config = {
       velDissipation: 0.4,
       dyeDissipation: 1.0,
@@ -219,7 +219,7 @@ export default class Fluid {
     this.accent = [0.12, 0.6, 1.0];    
     this.splats = [];
     this.lastTime = performance.now();
-    this.dpr = Math.min(window.devicePixelRatio, 2);
+    this.dpr = Math.min(window.devicePixelRatio, quality.fluid.dprCap);
     this.resize();
     this._seed();
   }

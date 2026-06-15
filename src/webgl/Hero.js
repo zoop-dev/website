@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { quality } from '../lib/quality.js';
 
 
 
@@ -19,6 +20,7 @@ const frag =  `
   uniform float uDim;       // brightness (dimmed behind text)
   uniform float uReveal;    // 0..1 intro
   uniform float uPress;     // 0..1 pointer held
+  uniform float uEnergy;    // mood: ~0.15 asleep, 1 awake, >1 excited
   uniform vec3  uAccent;    // themeable accent colour
   uniform float uReduced;
 
@@ -49,7 +51,7 @@ const frag =  `
   float fbm(vec3 p){ return 0.65 * vnoise(p) + 0.35 * vnoise(p * 2.03 + 9.2); }
 
   float map(vec3 p){
-    float t = uTime * 0.22;                      // slower, smoother
+    float t = uTime * (0.08 + 0.16 * uEnergy);   // mood drives the speed
     p.xy -= uMouse * 0.5;                         // lean toward the cursor
     p *= 1.3;
     p.xz *= rot(t * 0.5 + uMouse.x * 1.1);
@@ -115,6 +117,7 @@ const frag =  `
   void main(){
     vec2 uv = (gl_FragCoord.xy - 0.5*uRes) / uRes.y;
     uv -= uOffset;                                       // blob drifts as it travels
+    uv.y += (1.0 - clamp(uEnergy, 0.0, 1.0)) * 0.14;     // droops down when sleepy
 
     // dark atmospheric background with a soft lime-tinted glow
     float vig = smoothstep(1.1, 0.1, length(uv));
@@ -169,7 +172,7 @@ const frag =  `
     // grain + dim (kept visible as a connective backdrop, dimmed behind text)
     float g = (hash(gl_FragCoord.xy + uTime) - 0.5) * 0.04;
     col += g;
-    col *= uDim;                                         // per-section brightness
+    col *= uDim * (0.5 + 0.5 * clamp(uEnergy, 0.0, 1.4)); // dimmer asleep, brighter excited
     col *= smoothstep(0.0, 1.0, uReveal);                // intro fade-in
 
     gl_FragColor = vec4(col, 1.0);
@@ -194,6 +197,7 @@ export default class Hero {
       uDim: { value: 1 },
       uReveal: { value: 0 },
       uPress: { value: 0 },
+      uEnergy: { value: 1 },
       uAccent: { value: new THREE.Vector3(0.17, 0.72, 1.0) },
       uReduced: { value: 0 },
     };
@@ -207,18 +211,21 @@ export default class Hero {
 
     this.mouse = new THREE.Vector2(0, 0);
     this.target = new THREE.Vector2(0, 0);
-    const lite = new URLSearchParams(location.search).has('lite');
-    const lowEnd = (navigator.hardwareConcurrency || 4) <= 4 || window.innerWidth < 700;
     
-    this.dpr = lite ? 0.4 : Math.min(window.devicePixelRatio, lowEnd ? 1.0 : 1.25);
+    this.qScale = 1;
+    this.dpr = Math.min(window.devicePixelRatio, quality.hero.dprCap);
     this.resize();
   }
 
+  
+  setQualityScale(s) { this.qScale = s; this.resize(); }
+
   resize() {
     const w = window.innerWidth, h = window.innerHeight;
-    this.renderer.setPixelRatio(this.dpr);
+    const dpr = this.dpr * this.qScale;
+    this.renderer.setPixelRatio(dpr);
     this.renderer.setSize(w, h, false);
-    this.uniforms.uRes.value.set(w * this.dpr, h * this.dpr);
+    this.uniforms.uRes.value.set(w * dpr, h * dpr);
   }
 
   setMouse(x, y) { this.target.set(x, y); }
@@ -227,6 +234,7 @@ export default class Hero {
   setProgress(p) { this.progressTarget = p; }
   setOffset(x, y) { this.offsetTarget.set(x, y); }
   setDim(d) { this.dimTarget = d; }
+  setEnergy(e) { this.uniforms.uEnergy.value = e; }
   setAccent(hex) {
     const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
     if (m) this.uniforms.uAccent.value.set(parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255, parseInt(m[3], 16) / 255);

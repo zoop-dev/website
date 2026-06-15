@@ -52,6 +52,14 @@ export const defaultConfig = {
   },
   contact: { line1: "Let's make", em: 'something', line3: 'together.' },
   footer: { left: '© 2026 zoop · made with caffeine & shaders', mid: 'No designers were harmed' },
+  onboarding: {
+    hi: 'welcome to',
+    title: 'zoop', em: '.',
+    sub: 'a couple optional extras. you can change em anytime up top.',
+    soundLabel: 'sound', soundDesc: 'blips, bloops & flowing water',
+    notifLabel: 'notifs', notifDesc: 'the occasional friendly nudge',
+    enter: 'enter →',
+  },
   projectsPage: { title: "Everything\nI've made." },
   socials: [
     { label: 'Twitter / X', url: '#' },
@@ -61,12 +69,12 @@ export const defaultConfig = {
   ],
   
   projects: [
-    { id: 'aurora', name: 'Aurora Engine', tag: 'Real-time GPU fluid', year: '2026', stack: 'WebGL · GLSL', accent: '#2bb8ff', url: '#', pinned: true },
-    { id: 'monolith', name: 'Monolith', tag: 'Immersive brand site', year: '2025', stack: 'Three.js · GSAP', accent: '#7a5cff', url: '#', pinned: true },
-    { id: 'drift', name: 'Drift / OS', tag: '3D product configurator', year: '2025', stack: 'R3F · Blender', accent: '#2bd8ff', url: '#', pinned: true },
-    { id: 'halcyon', name: 'Halcyon', tag: 'Generative audio-visual', year: '2024', stack: 'Shaders · Web Audio', accent: '#ff9a4a', url: '#', pinned: false },
-    { id: 'vellum', name: 'Vellum', tag: 'Editorial reading engine', year: '2024', stack: 'Canvas · WebGL', accent: '#4ad6a0', url: '#', pinned: false },
-    { id: 'pulse', name: 'Pulse', tag: 'Live data dashboard', year: '2023', stack: 'D3 · Workers', accent: '#ff5c8a', url: '#', pinned: false },
+    { id: 'aurora', name: 'Aurora Engine', tag: 'Real-time GPU fluid', description: 'A from-scratch GPU fluid solver — millions of particles advected on the graphics card, tuned to stay buttery at 60fps.', year: '2026', stack: 'WebGL, GLSL, TypeScript', accent: '#2bb8ff', url: '#', pinned: true },
+    { id: 'monolith', name: 'Monolith', tag: 'Immersive brand site', description: 'A single-page brand experience built around one bold 3D centerpiece and a scroll that actually tells a story.', year: '2025', stack: 'Three.js, GSAP, Lenis', accent: '#7a5cff', url: '#', pinned: true },
+    { id: 'drift', name: 'Drift / OS', tag: '3D product configurator', description: 'Spin, customize and price a product in real time, right in the browser — no plugins, no waiting.', year: '2025', stack: 'R3F, Blender, Zustand', accent: '#2bd8ff', url: '#', pinned: true },
+    { id: 'halcyon', name: 'Halcyon', tag: 'Generative audio-visual', description: 'A generative piece where sound drives the visuals and no two visits ever look the same.', year: '2024', stack: 'Shaders, Web Audio', accent: '#ff9a4a', url: '#', pinned: false },
+    { id: 'vellum', name: 'Vellum', tag: 'Editorial reading engine', description: 'A reading engine that treats long-form text like a designed object — typographic, paginated, quietly animated.', year: '2024', stack: 'Canvas, WebGL', accent: '#4ad6a0', url: '#', pinned: false },
+    { id: 'pulse', name: 'Pulse', tag: 'Live data dashboard', description: 'A live dashboard streaming thousands of events a second into a calm, legible interface.', year: '2023', stack: 'D3, Workers, D1', accent: '#ff5c8a', url: '#', pinned: false },
   ],
 };
 
@@ -106,6 +114,7 @@ export function normalizeConfig(raw) {
     contact: merge(d.contact, c.contact),
     footer: merge(d.footer, c.footer),
     projectsPage: merge(d.projectsPage, c.projectsPage),
+    onboarding: merge(d.onboarding, c.onboarding),
     socials: Array.isArray(c.socials) ? c.socials : d.socials,
     projects: arr(c.projects, d.projects),
   };

@@ -9,7 +9,7 @@ export default class HeroManager {
   constructor(container, initialStyle = 'glass') {
     this.container = container;
     this.uniforms = { uPress: { value: 0 }, uReveal: { value: 0 } };
-    this.state = { mouse: [0, 0], scroll: 0, progress: 0, offset: [0, 0], dim: 1, accent: '#2bb8ff' };
+    this.state = { mouse: [0, 0], scroll: 0, progress: 0, offset: [0, 0], dim: 1, accent: '#2bb8ff', energy: 1 };
     this.style = null;
     this.active = null;
     this.setStyle(MAKERS[initialStyle] ? initialStyle : 'glass');
@@ -33,6 +33,8 @@ export default class HeroManager {
     this.active.setProgress(s.progress);
     this.active.setOffset(s.offset[0], s.offset[1]);
     this.active.setDim(s.dim);
+    this.active.setEnergy(s.energy);
+    if (s.qScale && s.qScale !== 1) this.active.setQualityScale?.(s.qScale);
     this.active.uniforms.uReveal.value = this.uniforms.uReveal.value;
   }
 
@@ -41,7 +43,9 @@ export default class HeroManager {
   setProgress(v) { this.state.progress = v; this.active.setProgress(v); }
   setOffset(x, y) { this.state.offset = [x, y]; this.active.setOffset(x, y); }
   setDim(v) { this.state.dim = v; this.active.setDim(v); }
+  setEnergy(v) { this.state.energy = v; this.active.setEnergy(v); }
   setAccent(hex) { this.state.accent = hex; this.active.setAccent(hex); }
+  setQualityScale(s) { this.state.qScale = s; this.active.setQualityScale?.(s); }
   resize() { this.active.resize(); }
 
   render(t) {

@@ -11,7 +11,13 @@ function emitProjectsHtml() {
     closeBundle() {
       const dist = path.resolve('dist');
       const idx = path.join(dist, 'index.html');
-      if (fs.existsSync(idx)) fs.copyFileSync(idx, path.join(dist, 'projects.html'));
+      if (!fs.existsSync(idx)) return;
+      
+      const html = fs.readFileSync(idx, 'utf8')
+        .replace('href="https://zachy.cc/"', 'href="https://zachy.cc/projects"')
+        .replace('<title>zoop — creative developer · real-time WebGL & motion</title>', '<title>All work · zoop</title>')
+        .replace('<meta property="og:url" content="https://zachy.cc/" />', '<meta property="og:url" content="https://zachy.cc/projects" />');
+      fs.writeFileSync(path.join(dist, 'projects.html'), html);
     },
   };
 }

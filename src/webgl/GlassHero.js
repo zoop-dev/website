@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { quality } from '../lib/quality.js';
 
 
 
@@ -23,6 +24,7 @@ export default class GlassHero {
 
     this.accent = '#2bb8ff';
     this.dim = 1;
+    this.energy = 1;
     this.mouse = new THREE.Vector2(0, 0);
     this.target = new THREE.Vector2(0, 0);
     this.offset = new THREE.Vector2(0, 0);
@@ -38,9 +40,12 @@ export default class GlassHero {
 
     this._buildMesh();
 
-    this.dpr = Math.min(window.devicePixelRatio, (navigator.hardwareConcurrency || 4) <= 4 ? 1.25 : 1.75);
+    this.qScale = 1;
+    this.dpr = Math.min(window.devicePixelRatio, quality.glass.dprCap);
     this.resize();
   }
+
+  setQualityScale(s) { this.qScale = s; this.resize(); }
 
   _envCanvas() {
     const c = document.createElement('canvas');
@@ -123,7 +128,7 @@ export default class GlassHero {
 
   resize() {
     const w = window.innerWidth, h = window.innerHeight;
-    this.renderer.setPixelRatio(this.dpr);
+    this.renderer.setPixelRatio(this.dpr * this.qScale);
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
@@ -134,6 +139,7 @@ export default class GlassHero {
   setProgress(p) { this.u.uProgress.value += (p - this.u.uProgress.value) * 1.0; this._progress = p; }
   setOffset(x, y) { this.offsetTarget.set(x, y); }
   setDim(d) { this.dimTarget = d; }
+  setEnergy(e) { this.energy = e; }
   setAccent(hex) {
     this.accent = hex;
     if (this.mat) this.mat.attenuationColor.set(hex);
@@ -148,15 +154,16 @@ export default class GlassHero {
     this.offset.lerp(this.offsetTarget, 0.05);
 
     
-    this.group.rotation.y += 0.0025;
+    const en = this.energy;
+    this.group.rotation.y += 0.0025 * (0.3 + 0.7 * en);
     this.group.rotation.x = this.mouse.y * 0.4;
-    this.group.rotation.y += (this.mouse.x * 0.5 - (this.group.rotation.y % (Math.PI * 2))) * 0.0;
     this.group.rotation.z = this.u.uProgress.value * 0.8;
-    this.group.position.set(this.offset.x * 2.2 + this.mouse.x * 0.25, this.offset.y * 2.2 + this.mouse.y * 0.25, 0);
-    const s = 1 + this.uniforms.uPress.value * 0.12;
+    const droop = (1 - Math.min(1, Math.max(0, en))) * 0.55;   
+    this.group.position.set(this.offset.x * 2.2 + this.mouse.x * 0.25, this.offset.y * 2.2 + this.mouse.y * 0.25 - droop, 0);
+    const s = (1 + this.uniforms.uPress.value * 0.12) * (0.96 + 0.04 * Math.min(1, en));
     this.group.scale.setScalar(s);
 
-    this.renderer.toneMappingExposure = Math.max(0, this.uniforms.uReveal.value) * this.dim * 1.5;
+    this.renderer.toneMappingExposure = Math.max(0, this.uniforms.uReveal.value) * this.dim * 1.5 * (0.55 + 0.45 * Math.min(1.4, en));
     this.renderer.render(this.scene, this.camera);
   }
 

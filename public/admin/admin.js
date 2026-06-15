@@ -28,6 +28,7 @@ const DEFAULTS = {
   play: { heading: 'Move\nyour cursor.', copy: 'A real-time ink simulation that reacts to your every move. Drag to shove the fluid around and watch it swirl, curl and dissolve. Weirdly satisfying.' },
   contact: { line1: "Let's make", em: 'something', line3: 'together.' },
   footer: { left: '© 2026 zoop · made with caffeine & shaders', mid: 'No designers were harmed' },
+  onboarding: { hi: 'welcome to', title: 'zoop', em: '.', sub: 'a couple optional extras. you can change em anytime up top.', soundLabel: 'sound', soundDesc: 'blips, bloops & flowing water', notifLabel: 'notifs', notifDesc: 'the occasional friendly nudge', enter: 'enter →' },
   projectsPage: { title: "Everything\nI've made." },
   socials: [
     { label: 'Twitter / X', url: '#' }, { label: 'GitHub', url: '#' }, { label: 'Dribbble', url: '#' }, { label: 'LinkedIn', url: '#' },
@@ -175,6 +176,23 @@ function buildForm() {
 
     <h2>Projects page</h2>
     <div class="field"><label>Title (new line = line break)</label><textarea data-path="projectsPage.title">${esc(c.projectsPage.title)}</textarea></div>
+
+    <h2>Onboarding (first visit)</h2>
+    <div class="row three">
+      <div class="field"><label>Greeting</label><input type="text" data-path="onboarding.hi" value="${attr(c.onboarding.hi)}"></div>
+      <div class="field"><label>Title</label><input type="text" data-path="onboarding.title" value="${attr(c.onboarding.title)}"></div>
+      <div class="field"><label>Accent bit</label><input type="text" data-path="onboarding.em" value="${attr(c.onboarding.em)}"></div>
+    </div>
+    <div class="field"><label>Sub-text</label><input type="text" data-path="onboarding.sub" value="${attr(c.onboarding.sub)}"></div>
+    <div class="row two">
+      <div class="field"><label>Sound label</label><input type="text" data-path="onboarding.soundLabel" value="${attr(c.onboarding.soundLabel)}"></div>
+      <div class="field"><label>Sound description</label><input type="text" data-path="onboarding.soundDesc" value="${attr(c.onboarding.soundDesc)}"></div>
+    </div>
+    <div class="row two">
+      <div class="field"><label>Notifs label</label><input type="text" data-path="onboarding.notifLabel" value="${attr(c.onboarding.notifLabel)}"></div>
+      <div class="field"><label>Notifs description</label><input type="text" data-path="onboarding.notifDesc" value="${attr(c.onboarding.notifDesc)}"></div>
+    </div>
+    <div class="field"><label>Enter button</label><input type="text" data-path="onboarding.enter" value="${attr(c.onboarding.enter)}"></div>
   `;
   renderNav(); renderTitlePhrases(); renderMarquee(); renderProjects(); renderColumns(); renderStats(); renderSocials();
   
@@ -225,11 +243,12 @@ function rowProject(p = {}) {
   c.innerHTML = `<button class="del" type="button">✕</button>
     <div class="row two">
       <div class="field"><label>Name</label><input type="text" data-field="name" value="${attr(p.name)}"></div>
-      <div class="field"><label>Tag</label><input type="text" data-field="tag" value="${attr(p.tag)}"></div>
+      <div class="field"><label>Tag (short)</label><input type="text" data-field="tag" value="${attr(p.tag)}"></div>
     </div>
+    <div class="field"><label>Description</label><textarea data-field="description">${esc(p.description)}</textarea></div>
     <div class="row three">
       <div class="field"><label>Year</label><input type="text" data-field="year" value="${attr(p.year)}"></div>
-      <div class="field"><label>Stack</label><input type="text" data-field="stack" value="${attr(p.stack)}"></div>
+      <div class="field"><label>Stack (comma-separated)</label><input type="text" data-field="stack" value="${attr(p.stack)}" placeholder="WebGL, GLSL, TypeScript"></div>
       <div class="field"><label>Accent</label><input type="color" data-field="accent" value="${attr(p.accent || '#2bb8ff')}"></div>
     </div>
     <div class="row two" style="align-items:end">
@@ -309,7 +328,7 @@ function collect() {
   out.marquee = [...document.querySelectorAll('.marquee-row')].map((r) => field(r, 'word')).filter((w) => w.trim());
   out.projects = [...document.querySelectorAll('.project-row')].map((r) => {
     const name = field(r, 'name');
-    return { id: r.dataset.id || slug(name), name, tag: field(r, 'tag'), year: field(r, 'year'), stack: field(r, 'stack'), accent: field(r, 'accent'), url: field(r, 'url'), pinned: field(r, 'pinned') };
+    return { id: r.dataset.id || slug(name), name, tag: field(r, 'tag'), description: field(r, 'description'), year: field(r, 'year'), stack: field(r, 'stack'), accent: field(r, 'accent'), url: field(r, 'url'), pinned: field(r, 'pinned') };
   }).filter((p) => p.name.trim());
   out.about.columns = [...document.querySelectorAll('.column-row')].map((r) => {
     const title = field(r, 'title'); const body = field(r, 'body');
