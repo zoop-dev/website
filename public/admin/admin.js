@@ -6,7 +6,7 @@ const DEFAULTS = {
   email: 'hi@zachy.cc',
   heroStyle: 'glass',
   meta: { title: 'zoop — interactive developer & designer', description: 'zoop makes interactive, real-time websites. Sometimes weird, always fast.' },
-  nav: { cta: "Let's talk" },
+  nav: { cta: "Let's talk", links: [{ label: 'Work', href: '#work' }, { label: 'About', href: '#about' }, { label: 'Play', href: '#play' }] },
   title: { enabled: true, interludes: true, phrases: ['zoop', 'I make weird websites', 'go on, poke the blob', 'caffeine & shaders', 'real-time everything', 'still here, btw', '{email}'] },
   hero: { metaL: ['Independent', 'Professional tinkerer'], metaR: ['Est. whenever', 'Mostly caffeine'], line1: 'I make', em: 'weird', line3: 'websites.', sub: 'The kind that go *woosh*, *bloop*, and occasionally *whoa*. Real-time, interactive, and running on way too many shaders.' },
   marquee: ['WebGL', 'Shaders', 'Three.js', 'Motion', 'Creative Dev'],
@@ -104,6 +104,9 @@ function buildForm() {
       <option value="glass" ${c.heroStyle !== 'blob' ? 'selected' : ''}>Glass mesh (refractive)</option>
       <option value="blob" ${c.heroStyle === 'blob' ? 'selected' : ''}>Blob (raymarched)</option>
     </select></div>
+    <label>Nav links</label>
+    <div class="hint">Target is a section id like <code>#work</code>. The "Let's talk" button uses the label above.</div>
+    <div id="list-nav"></div><button class="add" type="button" data-add="nav">+ link</button>
     <div class="field"><label>Meta description (SEO)</label><textarea data-path="meta.description">${esc(c.meta.description)}</textarea></div>
 
     <h2>Hero</h2>
@@ -173,7 +176,7 @@ function buildForm() {
     <h2>Projects page</h2>
     <div class="field"><label>Title (new line = line break)</label><textarea data-path="projectsPage.title">${esc(c.projectsPage.title)}</textarea></div>
   `;
-  renderTitlePhrases(); renderMarquee(); renderProjects(); renderColumns(); renderStats(); renderSocials();
+  renderNav(); renderTitlePhrases(); renderMarquee(); renderProjects(); renderColumns(); renderStats(); renderSocials();
   
   const col = $('#accent-color'), txt = $('#accent-text');
   col.addEventListener('input', () => { txt.value = col.value; });
@@ -195,6 +198,19 @@ function rowMarquee(w = '', cls = 'marquee-row') {
   d.innerHTML = `<input type="text" data-field="word" value="${attr(w)}" style="flex:1"><button class="del" type="button">✕</button>`;
   d.querySelector('.del').addEventListener('click', () => d.remove());
   return d;
+}
+function renderNav() {
+  const m = $('#list-nav'); m.innerHTML = '';
+  (cfg.nav.links || []).forEach((l) => m.appendChild(rowNav(l)));
+}
+function rowNav(l = {}) {
+  const c = document.createElement('div'); c.className = 'card nav-row';
+  c.innerHTML = `<button class="del" type="button">✕</button>
+    <div class="row two">
+      <div class="field"><label>Label</label><input type="text" data-field="label" value="${attr(l.label)}"></div>
+      <div class="field"><label>Target (#id)</label><input type="text" data-field="href" value="${attr(l.href || '#')}"></div>
+    </div>`;
+  mountDel(c); return c;
 }
 function renderTitlePhrases() {
   const m = $('#list-titlephrases'); m.innerHTML = '';
@@ -272,6 +288,7 @@ function rowSocial(s = {}) {
   return c;
 }
 function addRow(kind) {
+  if (kind === 'nav') $('#list-nav').appendChild(rowNav({ href: '#' }));
   if (kind === 'titlephrases') $('#list-titlephrases').appendChild(rowMarquee('', 'titlephrase-row'));
   if (kind === 'marquee') $('#list-marquee').appendChild(rowMarquee());
   if (kind === 'projects') $('#list-projects').appendChild(rowProject({ accent: '#2bb8ff', url: '#', pinned: false }));
@@ -285,6 +302,8 @@ function field(card, name) { const el = card.querySelector(`[data-field="${name}
 function collect() {
   const out = structuredClone(cfg);
   document.querySelectorAll('#cfg [data-path]').forEach((el) => pathSet(out, el.dataset.path, el.type === 'checkbox' ? el.checked : el.value));
+  if (!out.nav) out.nav = {};
+  out.nav.links = [...document.querySelectorAll('.nav-row')].map((r) => ({ label: field(r, 'label'), href: field(r, 'href') || '#' })).filter((l) => l.label.trim());
   if (!out.title) out.title = {};
   out.title.phrases = [...document.querySelectorAll('.titlephrase-row')].map((r) => field(r, 'word')).filter((w) => w.trim());
   out.marquee = [...document.querySelectorAll('.marquee-row')].map((r) => field(r, 'word')).filter((w) => w.trim());

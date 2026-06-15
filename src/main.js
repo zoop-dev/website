@@ -9,6 +9,10 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const hasHover = window.matchMedia('(hover: hover)').matches;
 
 
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+
+
 const heroStyleOverride = new URLSearchParams(location.search).get('hero'); 
 const hero = new HeroManager(document.getElementById('hero-gl'), heroStyleOverride || 'glass');
 const play = new Fluid(document.getElementById('play-gl'));
@@ -20,6 +24,7 @@ const lenis = new Lenis({
   prevent: (node) => !!(node && node.closest && node.closest('.projects-page')),
 });
 lenis.on('scroll', onScroll);
+lenis.scrollTo(0, { immediate: true });
 
 const heroEl = document.getElementById('hero');
 const playEl = document.getElementById('play');
@@ -41,6 +46,18 @@ function onScroll() {
 }
 const metaL = document.querySelector('.hero__meta--l');
 const metaR = document.querySelector('.hero__meta--r');
+
+
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const id = a.getAttribute('href');
+  e.preventDefault();
+  if (pageOpen) closeProjects();
+  if (id === '#' || id === '#top') { lenis.scrollTo(0, { duration: 1.2 }); return; }
+  const el = document.querySelector(id);
+  if (el) lenis.scrollTo(el, { duration: 1.2 });
+});
 
 
 const marqueeTrack = document.querySelector('.marquee__track');
@@ -336,7 +353,18 @@ function renderAboutLead(text) {
   const lead = document.querySelector('.about__lead');
   if (!lead) return;
   lead.innerHTML = String(text).split(/\s+/).map((w) => `<span data-reveal-word>${esc(w)}</span>`).join(' ');
-  if (revealed) lead.querySelectorAll('[data-reveal-word]').forEach((s) => { s.style.opacity = '1'; });
+}
+
+function updateAboutLead() {
+  const lead = document.querySelector('.about__lead');
+  if (!lead) return;
+  const words = lead.querySelectorAll('[data-reveal-word]');
+  if (!words.length) return;
+  const rect = lead.getBoundingClientRect();
+  const vh = window.innerHeight;
+  const prog = Math.min(1, Math.max(0, (vh * 0.82 - rect.top) / (vh * 0.55)));
+  const lit = prog * words.length;
+  words.forEach((w, i) => { w.style.opacity = (0.12 + 0.88 * Math.min(1, Math.max(0, lit - i))).toFixed(3); });
 }
 function renderAboutColumns(columns) {
   const grid = document.querySelector('.about__grid');
@@ -392,7 +420,12 @@ function applyConfig(config) {
   const desc = document.querySelector('meta[name="description"]');
   if (desc && config.meta.description) desc.setAttribute('content', config.meta.description);
   
-  setText('.nav__cta', config.nav.cta);
+  const navWrap = document.querySelector('.nav__links');
+  if (navWrap) {
+    navWrap.innerHTML = config.nav.links.map((l) => `<a href="${esc(l.href)}" data-cursor="zoom">${esc(l.label)}</a>`).join('')
+      + `<a href="#contact" class="nav__cta" data-cursor="zoom">${esc(config.nav.cta)}</a>`;
+    bindCursor(navWrap);
+  }
   
   const ml = document.querySelectorAll('.hero__meta--l span');
   const mr = document.querySelectorAll('.hero__meta--r span');
@@ -479,15 +512,6 @@ function setupReveals() {
   });
 
   
-  const lead = document.querySelector('.about__lead');
-  const lio = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      entry.target.querySelectorAll('[data-reveal-word]').forEach((w, i) => gsap.to(w, { opacity: 1, duration: 0.4, delay: i * 0.03, ease: 'none' }));
-      lio.disconnect();
-    });
-  }, { threshold: 0.4 });
-  lio.observe(lead);
 }
 
 
@@ -582,7 +606,13 @@ setInterval(() => {
 
 
 const tSleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const setTitle = (s) => { document.title = s && s.length ? s : ' '; };
+let titleHidden = false;
+const setTitle = (s) => { if (titleHidden) return; document.title = s && s.length ? s : ' '; };
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { titleHidden = true; document.title = titlePhrases()[0] || 'zoop'; }
+  else { titleHidden = false; }
+});
 const pick = (a) => a[(Math.random() * a.length) | 0];
 const FLAP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ·@/.';
 
@@ -818,6 +848,7 @@ function raf(t) {
   updateScrollbar();
   updateVelocityFX();
   updateWork();
+  updateAboutLead();
   workCurrentX += (workTargetX - workCurrentX) * 0.16;
   if (window.innerWidth > 760) workTrack.style.transform = `translate3d(${-workCurrentX}px,0,0)`;
   if (!hidden && revealed) {

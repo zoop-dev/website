@@ -10,7 +10,14 @@ export const defaultConfig = {
     title: 'zoop — interactive developer & designer',
     description: 'zoop makes interactive, real-time websites. Sometimes weird, always fast.',
   },
-  nav: { cta: "Let's talk" },
+  nav: {
+    cta: "Let's talk",
+    links: [
+      { label: 'Work', href: '#work' },
+      { label: 'About', href: '#about' },
+      { label: 'Play', href: '#play' },
+    ],
+  },
   title: {
     enabled: true,
     interludes: true, 
@@ -77,7 +84,7 @@ export function normalizeConfig(raw) {
     email: c.email || d.email,
     heroStyle: c.heroStyle === 'blob' ? 'blob' : 'glass',
     meta: merge(d.meta, c.meta),
-    nav: merge(d.nav, c.nav),
+    nav: { cta: (c.nav && c.nav.cta) || d.nav.cta, links: arr(c.nav && c.nav.links, d.nav.links) },
     title: {
       enabled: c.title && c.title.enabled === false ? false : true,
       interludes: c.title && c.title.interludes === false ? false : true,
