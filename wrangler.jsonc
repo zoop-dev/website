@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zoop",
+  "compatibility_date": "2025-06-01",
+  "pages_build_output_dir": "dist",
+
+  // KV namespace holding the editable site config.
+  "kv_namespaces": [
+    { "binding": "CONFIG", "id": "96b661e1818f4773acd2a3a1b39c58b0" }
+  ]
+
+  // ADMIN_PASSWORD is a secret, set separately (never commit it):
+  //   npx wrangler pages secret put ADMIN_PASSWORD
+}

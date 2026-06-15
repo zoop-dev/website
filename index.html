@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070a" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>zoop — interactive developer & designer</title>
+    <meta name="description" content="zoop makes interactive, real-time websites. Sometimes weird, always fast." />
+    <link rel="canonical" href="https://zachy.cc/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://zachy.cc/" />
+    <meta property="og:title" content="zoop — creative engineer" />
+    <meta property="og:description" content="I make weird, fast, interactive websites. Real-time WebGL and motion, mostly for the fun of it." />
+    <meta property="og:image" content="https://zachy.cc/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://zachy.cc/og.png" />
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://zachy.cc/#website",
+            "url": "https://zachy.cc/",
+            "name": "zoop",
+            "description": "zoop makes interactive, real-time websites. Sometimes weird, always fast.",
+            "inLanguage": "en",
+            "publisher": { "@id": "https://zachy.cc/#person" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://zachy.cc/#person",
+            "name": "zoop",
+            "url": "https://zachy.cc/",
+            "jobTitle": "Creative developer",
+            "description": "I make weird, fast, interactive websites — real-time WebGL and motion.",
+            "knowsAbout": ["WebGL", "GLSL", "Three.js", "Creative coding", "Motion design"]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    
+    <div class="grain" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    
+    <div id="hero-gl" aria-hidden="true"></div>
+
+    
+    <div class="scrollbar" id="scrollbar" aria-hidden="true"><div class="scrollbar__thumb" id="scrollbar-thumb"></div></div>
+
+    
+    <div class="cursor" aria-hidden="true"><span class="cursor__dot"></span><span class="cursor__ring"></span></div>
+
+    
+    <div class="loader" id="loader">
+      <div class="loader__inner">
+        <span class="loader__name">zoop</span>
+        <span class="loader__count"><span id="loader-pct">0</span>%</span>
+        <div class="loader__bar"><span id="loader-fill"></span></div>
+        <div class="loader__status" id="loader-status" aria-live="polite"></div>
+        <button class="loader__retry" id="loader-retry" type="button" hidden>↻ Reload</button>
+      </div>
+    </div>
+
+    
+    <header class="nav" id="nav">
+      <a class="nav__brand" href="#top" data-cursor="zoom">zoop<span>©</span></a>
+      <nav class="nav__links">
+        <a href="#work" data-cursor="zoom">Work</a>
+        <a href="#about" data-cursor="zoom">About</a>
+        <a href="#play" data-cursor="zoom">Play</a>
+        <a href="#contact" class="nav__cta" data-cursor="zoom">Let's talk</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      
+      <section class="hero" id="hero">
+        <div class="hero__meta hero__meta--l"><span data-reveal>Independent</span><span data-reveal>Professional tinkerer</span></div>
+        <div class="hero__meta hero__meta--r"><span data-reveal>Est. whenever</span><span data-reveal>Mostly caffeine</span></div>
+        <h1 class="hero__title">
+          <span class="line"><span data-reveal-y>I make</span></span>
+          <span class="line line--em"><span data-reveal-y>weird</span></span>
+          <span class="line"><span data-reveal-y>websites.</span></span>
+        </h1>
+        <p class="hero__sub" data-reveal>The kind that go <em>woosh</em>, <em>bloop</em>, and occasionally <em>whoa</em>. Real-time, interactive, and running on way too many shaders.</p>
+        <a class="hero__scroll" href="#work" data-cursor="zoom"><span>Scroll</span><i></i></a>
+      </section>
+
+      
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee__track">
+          <span>WebGL</span><i>✺</i><span>Shaders</span><i>✺</i><span>Three.js</span><i>✺</i><span>Motion</span><i>✺</i><span>Creative Dev</span><i>✺</i>
+          <span>WebGL</span><i>✺</i><span>Shaders</span><i>✺</i><span>Three.js</span><i>✺</i><span>Motion</span><i>✺</i><span>Creative Dev</span><i>✺</i>
+        </div>
+      </div>
+
+      
+      <section class="work" id="work">
+        <div class="work__pin">
+          <div class="work__head">
+            <span class="section-head__idx">(01)</span>
+            <h2 class="work__title">Selected Work</h2>
+            <span class="work__hint">Scroll &rarr;</span>
+          </div>
+          <div class="work__track" id="work-track">
+            <article class="panel" data-accent="01" data-cursor="view">
+              <span class="panel__idx">01</span>
+              <div class="panel__body">
+                <h3 class="panel__name">Aurora Engine</h3>
+                <p class="panel__tag">Real-time GPU fluid</p>
+                <div class="panel__meta"><span>2026</span><span>WebGL · GLSL</span></div>
+              </div>
+              <span class="panel__view">View case</span>
+            </article>
+            <article class="panel" data-accent="02" data-cursor="view">
+              <span class="panel__idx">02</span>
+              <div class="panel__body">
+                <h3 class="panel__name">Monolith</h3>
+                <p class="panel__tag">Immersive brand site</p>
+                <div class="panel__meta"><span>2025</span><span>Three.js · GSAP</span></div>
+              </div>
+              <span class="panel__view">View case</span>
+            </article>
+            <article class="panel" data-accent="03" data-cursor="view">
+              <span class="panel__idx">03</span>
+              <div class="panel__body">
+                <h3 class="panel__name">Drift / OS</h3>
+                <p class="panel__tag">3D product configurator</p>
+                <div class="panel__meta"><span>2025</span><span>R3F · Blender</span></div>
+              </div>
+              <span class="panel__view">View case</span>
+            </article>
+            <article class="panel" data-accent="04" data-cursor="view">
+              <span class="panel__idx">04</span>
+              <div class="panel__body">
+                <h3 class="panel__name">Halcyon</h3>
+                <p class="panel__tag">Generative audio-visual</p>
+                <div class="panel__meta"><span>2024</span><span>Shaders · Web Audio</span></div>
+              </div>
+              <span class="panel__view">View case</span>
+            </article>
+            <article class="panel panel--cta">
+              <div class="panel__body">
+                <h3 class="panel__name">More?</h3>
+                <p class="panel__tag">There's a whole pile of it.</p>
+                <a class="panel__link" href="#contact" data-cursor="zoom">Get in touch &rarr;</a>
+              </div>
+            </article>
+          </div>
+          <div class="work__progress"><span id="work-progress-fill"></span></div>
+        </div>
+      </section>
+
+      
+      <section class="about" id="about">
+        <span class="section-head__idx" data-reveal>(02)</span>
+        <p class="about__lead">
+          <span data-reveal-word>I'm</span> <span data-reveal-word>zoop.</span> <span data-reveal-word>I</span>
+          <span data-reveal-word>got</span> <span data-reveal-word>way</span> <span data-reveal-word>too</span>
+          <span data-reveal-word>into</span> <span data-reveal-word>making</span> <span data-reveal-word>pixels</span>
+          <span data-reveal-word>move,</span> <span data-reveal-word>so</span> <span data-reveal-word>now</span>
+          <span data-reveal-word>I</span> <span data-reveal-word>build</span> <span data-reveal-word>fast,</span>
+          <span data-reveal-word>interactive</span> <span data-reveal-word>websites</span> <span data-reveal-word>with</span>
+          <span data-reveal-word>way</span> <span data-reveal-word>too</span> <span data-reveal-word>many</span>
+          <span data-reveal-word>shaders.</span>
+        </p>
+        <div class="about__grid">
+          <div class="about__col" data-reveal>
+            <h3>Things I do</h3>
+            <ul><li>WebGL / GLSL</li><li>Three.js / R3F</li><li>Creative direction</li><li>Motion design</li><li>Aggressive console.logging</li></ul>
+          </div>
+          <div class="about__col" data-reveal>
+            <h3>Bragging rights</h3>
+            <ul><li>Awwwards · SOTD</li><li>FWA of the Day</li><li>CSS Design Awards</li><li>Mom-approved ✓</li></ul>
+          </div>
+          <div class="about__col" data-reveal>
+            <h3>The vibe</h3>
+            <p>Every pixel intentional, every frame at 60fps, every animation slightly unnecessary. I treat the browser as a playground and performance as a personality trait.</p>
+          </div>
+        </div>
+      </section>
+
+      
+      <section class="stats" id="stats">
+        <div class="stat">
+          <span class="stat__num" data-count="12">0</span>
+          <span class="stat__label">Shipped experiences</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" data-count="60" data-suffix="">0</span>
+          <span class="stat__label">Frames per second, always</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" data-count="4200000" data-format="compact">0</span>
+          <span class="stat__label">Pixels pushed (give or take)</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num">∞</span>
+          <span class="stat__label">Cups of coffee</span>
+        </div>
+      </section>
+
+      
+      <section class="play" id="play">
+        <canvas id="play-gl"></canvas>
+        <div class="play__copy">
+          <span class="section-head__idx" data-reveal>(03)</span>
+          <h2 data-reveal>Move<br />your cursor.</h2>
+          <p data-reveal>A real-time ink simulation that reacts to your every move. Drag to shove the fluid around and watch it swirl, curl and dissolve. Weirdly satisfying.</p>
+        </div>
+      </section>
+
+      
+      <section class="contact" id="contact">
+        <span class="section-head__idx" data-reveal>(04)</span>
+        <h2 class="contact__title">
+          <span class="line"><span data-reveal-y>Let's make</span></span>
+          <span class="line line--em"><span data-reveal-y>something</span></span>
+          <span class="line"><span data-reveal-y>together.</span></span>
+        </h2>
+        <a class="contact__mail" href="mailto:hi@zachy.cc" data-cursor="zoom">hi@zachy.cc</a>
+        <div class="contact__socials">
+          <a href="#" data-cursor="zoom">Twitter / X</a>
+          <a href="#" data-cursor="zoom">GitHub</a>
+          <a href="#" data-cursor="zoom">Dribbble</a>
+          <a href="#" data-cursor="zoom">LinkedIn</a>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>© 2026 zoop · made with caffeine &amp; shaders</span>
+        <span>No designers were harmed</span>
+        <span class="footer__time" id="clock">—</span>
+      </footer>
+    </main>
+
+    
+    <section class="projects-page" id="projects-page" aria-hidden="true" data-lenis-prevent>
+      <div class="projects-page__bar">
+        <span class="projects-page__idx">All work</span>
+        <button class="projects-page__close" id="projects-close" type="button" data-cursor="zoom">Back ✕</button>
+      </div>
+      <h2 class="projects-page__title" id="projects-page-title">Everything<br />I've made.</h2>
+      <div class="projects-page__grid" id="projects-grid"></div>
+      <div class="projects-page__foot">— that's the lot —</div>
+    </section>
+
+    
+    <ul class="ctx" id="ctx" role="menu" aria-hidden="true">
+      <li class="ctx__brand">zoop.exe</li>
+      <li class="ctx__item" data-action="boop" role="menuitem">Boop the blob <span>✦</span></li>
+      <li class="ctx__item" data-action="ink" role="menuitem">Splash some ink <span>🌊</span></li>
+      <li class="ctx__item" data-action="roll" role="menuitem">Do a barrel roll <span>🙃</span></li>
+      <li class="ctx__item" data-action="email" role="menuitem">Steal my email <span>📋</span></li>
+      <li class="ctx__item" data-action="konami" role="menuitem">Enable chaos mode <span>🌀</span></li>
+      <li class="ctx__item" data-action="top" role="menuitem">Beam me up <span>🛸</span></li>
+      <li class="ctx__item ctx__item--mute" data-action="nothing" role="menuitem">Definitely no secrets <span>🤫</span></li>
+    </ul>
+    <div class="toast" id="toast" aria-live="polite"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

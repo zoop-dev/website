@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>zoop · admin</title>
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root { --bg:#07070a; --panel:#0e0e14; --line:rgba(236,235,230,.1); --fg:#ecebe6; --dim:#8a8a93; --accent:#2bb8ff; --bad:#ff6b6b; --good:#4ad6a0; }
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { background:var(--bg); color:var(--fg); font-family:'Satoshi',sans-serif; line-height:1.4; }
+      a { color:var(--accent); }
+      .mono { font-family:'JetBrains Mono',monospace; }
+      .wrap { max-width:860px; margin:0 auto; padding:clamp(1.5rem,4vw,3rem) clamp(1rem,4vw,2rem) 8rem; }
+      header.bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2.5rem; }
+      .brand { font-family:'Clash Display',sans-serif; font-weight:600; font-size:1.6rem; }
+      .brand span { color:var(--dim); font-size:.8rem; }
+      h2 { font-family:'Clash Display',sans-serif; font-weight:500; font-size:1.3rem; margin:2.5rem 0 1rem; padding-top:1.5rem; border-top:1px solid var(--line); }
+      h2:first-of-type { border-top:none; padding-top:0; }
+      label { display:block; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin:0 0 .4rem; font-family:'JetBrains Mono',monospace; }
+      input[type=text], input[type=password], textarea, select {
+        width:100%; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+        color:var(--fg); padding:.7rem .8rem; font-family:'Satoshi',sans-serif; font-size:.95rem; transition:border-color .2s;
+      }
+      input:focus, textarea:focus, select:focus { outline:none; border-color:var(--accent); }
+      textarea { resize:vertical; min-height:70px; }
+      .field { margin-bottom:1rem; }
+      .row { display:grid; gap:.8rem; }
+      .row.two { grid-template-columns:1fr 1fr; }
+      .row.three { grid-template-columns:1fr 1fr 1fr; }
+      @media(max-width:600px){ .row.two,.row.three{ grid-template-columns:1fr; } }
+      .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:1rem; margin-bottom:.8rem; position:relative; }
+      .card .del { position:absolute; top:.6rem; right:.6rem; background:transparent; border:1px solid var(--line); color:var(--dim); border-radius:6px; padding:.2rem .5rem; cursor:pointer; font-size:.7rem; }
+      .card .del:hover { border-color:var(--bad); color:var(--bad); }
+      .add { background:transparent; border:1px dashed var(--line); color:var(--accent); border-radius:8px; padding:.6rem 1rem; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.8rem; }
+      .add:hover { border-color:var(--accent); }
+      .pinrow { display:flex; align-items:center; gap:.5rem; font-size:.85rem; color:var(--dim); }
+      input[type=checkbox]{ width:16px; height:16px; accent-color:var(--accent); }
+      input[type=color]{ width:46px; height:38px; padding:2px; background:var(--panel); border:1px solid var(--line); border-radius:8px; cursor:pointer; }
+      .accentrow { display:flex; gap:.6rem; align-items:center; }
+      .savebar { position:fixed; bottom:0; left:0; right:0; background:rgba(7,7,10,.9); backdrop-filter:blur(12px); border-top:1px solid var(--line); padding:1rem clamp(1rem,4vw,2rem); display:flex; gap:1rem; align-items:center; justify-content:flex-end; z-index:10; }
+      button.primary { background:var(--accent); color:#07070a; border:none; border-radius:100px; padding:.7rem 1.6rem; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; }
+      button.primary:disabled { opacity:.5; cursor:default; }
+      button.ghost { background:transparent; color:var(--fg); border:1px solid var(--line); border-radius:100px; padding:.7rem 1.3rem; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.8rem; }
+      .msg { font-family:'JetBrains Mono',monospace; font-size:.8rem; margin-right:auto; }
+      .msg.ok { color:var(--good); } .msg.err { color:var(--bad); }
+      
+      .login { max-width:380px; margin:18vh auto 0; text-align:center; padding:0 1.5rem; }
+      .login h1 { font-family:'Clash Display',sans-serif; font-size:3rem; font-weight:600; margin-bottom:.3rem; }
+      .login p { color:var(--dim); margin-bottom:2rem; font-size:.9rem; }
+      .login form { display:flex; gap:.6rem; }
+      .login .err { color:var(--bad); font-family:'JetBrains Mono',monospace; font-size:.8rem; margin-top:1rem; min-height:1.2em; }
+      .hidden { display:none !important; }
+      .hint { font-size:.78rem; color:var(--dim); margin:-.5rem 0 1rem; }
+    </style>
+  </head>
+  <body>
+    
+    <section class="login" id="login">
+      <h1>zoop<span style="color:var(--accent)">.</span></h1>
+      <p class="mono">admin · sign in to edit the site</p>
+      <form id="login-form">
+        <input type="password" id="pw" placeholder="password" autocomplete="current-password" />
+        <button class="primary" type="submit">Enter</button>
+      </form>
+      <div class="err" id="login-err"></div>
+    </section>
+
+    
+    <div class="wrap hidden" id="editor">
+      <header class="bar">
+        <div class="brand">zoop <span class="mono">/ admin</span></div>
+        <div style="display:flex;gap:.8rem">
+          <a class="add" href="/" target="_blank" style="text-decoration:none">View site ↗</a>
+          <button class="ghost" id="logout">Log out</button>
+        </div>
+      </header>
+      <form id="cfg"></form>
+    </div>
+
+    <div class="savebar hidden" id="savebar">
+      <span class="msg" id="msg"></span>
+      <button class="ghost" id="reset" type="button">Reset changes</button>
+      <button class="primary" id="save" type="button">Save changes</button>
+    </div>
+
+    <script type="module" src="/admin/admin.js"></script>
+  </body>
+</html>

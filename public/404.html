@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07070a" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>404 — lost in the void · zoop</title>
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root { --bg:#07070a; --fg:#ecebe6; --dim:#8a8a93; --accent:#2bb8ff; }
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body {
+        min-height:100vh; background:var(--bg); color:var(--fg);
+        font-family:'Satoshi',sans-serif; display:flex; flex-direction:column;
+        align-items:center; justify-content:center; text-align:center; padding:2rem;
+        overflow:hidden; position:relative;
+      }
+      .glow { position:fixed; inset:0; pointer-events:none;
+        background:radial-gradient(60% 50% at 50% 45%, rgba(43,184,255,.16), transparent 70%); }
+      .vignette { position:fixed; inset:0; pointer-events:none;
+        background:radial-gradient(120% 120% at 50% 40%, transparent 55%, rgba(0,0,0,.6) 100%); }
+      h1 {
+        font-family:'Clash Display',sans-serif; font-weight:600; line-height:.85;
+        font-size:clamp(7rem,30vw,22rem); letter-spacing:-.03em; position:relative;
+        background:linear-gradient(180deg,#fff, #2bb8ff 140%); -webkit-background-clip:text;
+        background-clip:text; color:transparent; animation:float 6s ease-in-out infinite;
+      }
+      @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+      p.lead { font-family:'Clash Display',sans-serif; font-size:clamp(1.3rem,4vw,2.4rem); font-weight:500; margin-top:.5rem; }
+      p.lead em { font-style:italic; color:var(--accent); }
+      p.sub { color:var(--dim); margin-top:1rem; max-width:36ch; line-height:1.5; }
+      a.home {
+        margin-top:2.5rem; display:inline-flex; align-items:center; gap:.6rem;
+        font-family:'JetBrains Mono',monospace; font-size:.8rem; text-transform:uppercase;
+        letter-spacing:.08em; color:var(--fg); text-decoration:none;
+        border:1px solid rgba(236,235,230,.18); border-radius:100px; padding:.8em 1.5em;
+        transition:border-color .3s, color .3s, gap .3s;
+      }
+      a.home:hover { border-color:var(--accent); color:var(--accent); gap:1rem; }
+      .code { position:fixed; bottom:1.5rem; font-family:'JetBrains Mono',monospace;
+        font-size:.7rem; letter-spacing:.1em; color:var(--dim); text-transform:uppercase; }
+      ::selection { background:var(--accent); color:#07070a; }
+    </style>
+  </head>
+  <body>
+    <div class="glow"></div>
+    <div class="vignette"></div>
+    <h1>404</h1>
+    <p class="lead">Well, this is <em>awkward.</em></p>
+    <p class="sub">That page took a wrong turn into the void. It happens. Let's get you back to somewhere that actually exists.</p>
+    <a class="home" href="/">← back to zoop</a>
+    <div class="code">error 404 · page not found</div>
+  </body>
+</html>
