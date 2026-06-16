@@ -9,6 +9,7 @@ import { notify } from './notify.js';
 import { transition } from './lib/transition.js';
 import { magnetic, tilt } from './lib/interactions.js';
 import { liquidType } from './lib/liquid.js';
+import { mountScene, mountBehind } from './lib/anima-scene.js';
 import { quality } from './lib/quality.js';
 import { hexToRgba } from './lib/motion.js';
 
@@ -35,6 +36,117 @@ lenis.scrollTo(0, { immediate: true });
 
 const heroEl = document.getElementById('hero');
 const playEl = document.getElementById('play');
+
+const cueEl = document.getElementById('scroll-cue');
+const sbWrap = document.getElementById('scrollbar');
+let sbIdle = 0;
+
+const spineEl = document.getElementById('spine');
+const spineFill = document.getElementById('spine-fill');
+const spineComet = document.getElementById('spine-comet');
+const spinePct = document.getElementById('spine-pct');
+const SPINE_SECTIONS = [
+  { id: 'work', n: '01', label: 'Work' },
+  { id: 'about', n: '02', label: 'About' },
+  { id: 'play', n: '03', label: 'Play' },
+  { id: 'contact', n: '04', label: "Let's talk" },
+];
+let spineNodes = [];
+function buildSpine() {
+  if (!spineEl) return;
+  spineNodes = SPINE_SECTIONS.map((s) => {
+    const el = document.getElementById(s.id);
+    const btn = document.createElement('button');
+    btn.className = 'spine__node';
+    btn.innerHTML = `<span class="spine__label"><i>${s.n}</i> ${s.label}</span><span class="spine__dot"></span>`;
+    btn.addEventListener('click', () => { if (el) lenis.scrollTo(el, { duration: 1.2 }); });
+    spineEl.appendChild(btn);
+    return { el, btn, dot: btn.querySelector('.spine__dot'), frac: 0 };
+  });
+  measureSpine();
+}
+function measureSpine() {
+  const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  spineNodes.forEach((nd) => {
+    if (!nd.el) return;
+    const top = nd.el.getBoundingClientRect().top + window.scrollY;
+    nd.frac = Math.min(1, Math.max(0, top / maxScroll));
+    nd.btn.style.top = `${nd.frac * 100}%`;
+  });
+}
+const ABSORB = 0.03;   
+function updateScrollCue(p) {
+  if (cueEl) cueEl.classList.toggle('is-scrolling', p > 0.005);
+  if (sbWrap) { sbWrap.classList.add('is-active'); clearTimeout(sbIdle); sbIdle = setTimeout(() => sbWrap.classList.remove('is-active'), 900); }
+  if (!spineEl) return;
+
+  
+  let nearest = -1, nd = 1;
+  spineNodes.forEach((n, i) => { const d = Math.abs(p - n.frac); if (d < nd) { nd = d; nearest = i; } });
+  const absorb = nearest >= 0 ? Math.max(0, 1 - nd / ABSORB) : 0;
+
+  
+  spineFill.style.transform = `scaleY(${p.toFixed(3)})`;
+  spineComet.style.top = `${(p * 100).toFixed(2)}%`;
+  spineComet.style.transform = `translate(50%,-50%) scale(${(1 - absorb * 0.92).toFixed(3)})`;
+  spineComet.style.opacity = (1 - absorb).toFixed(3);
+
+  
+  spinePct.textContent = `${Math.round(p * 100)}%`;
+  spinePct.style.top = `${(p * 100).toFixed(2)}%`;
+  spinePct.style.opacity = (p > 0.005 ? (1 - absorb) : 0).toFixed(3);
+
+  
+  let active = -1;
+  spineNodes.forEach((n, i) => { if (p >= n.frac - 0.01) active = i; });
+  spineNodes.forEach((n, i) => {
+    n.btn.classList.toggle('is-active', i === active);
+    const a = i === nearest ? absorb : 0;                  
+    n.dot.style.transform = `translate(50%,-50%) scale(${(1 + a * 1.8).toFixed(3)})`;
+    n.dot.style.boxShadow = a > 0.02 ? `0 0 ${(6 + a * 24).toFixed(0)}px var(--accent)` : '';
+  });
+}
+
+
+const scenes = [];
+const registerScene = (inst) => { if (inst) scenes.push(inst); return inst; };
+
+
+function buildScrollArrow() {
+  const host = document.querySelector('.hero__scroll i');
+  if (!host) return;
+  const c = document.createElement('canvas');
+  Object.assign(c.style, { position: 'absolute', inset: '0', width: '100%', height: '100%' });
+  host.appendChild(c);
+  registerScene(mountScene(c, {
+    spring: { stiff: 80, damp: 18 },
+    nodes: [
+      { type: 'line', color: 'rgba(236,235,230,0.22)', x: 'w*0.5', y: 'h*0.08', x2: 'w*0.5', y2: 'h*0.92', width: 1 },
+      { type: 'dot', color: '@accent', x: 'w*0.5', y: 'h*0.08 + ((t*0.55)%1)*h*0.84', r: 2.4, glow: 9, alpha: '(1-((t*0.55)%1))*0.85 + 0.12' },
+    ],
+  }));
+}
+
+
+const IGNITE_SCENE = {
+  spring: { stiff: 120, damp: 18 },
+  nodes: [
+    { type: 'dot', color: '@accent', alpha: 'hover*0.26', r: 'min(w,h)*0.55', glow: 'hover*28' },
+    { type: 'ring', color: '@accent', r: 'min(w,h)*0.46*(0.82+hover*0.22)', width: '1+hover', alpha: 'hover*0.7', glow: 'hover*10' },
+    { type: 'dot', repeat: 10, color: '@accent', r: 'hover*1.5', alpha: 'hover*0.9', glow: 'hover*8',
+      x: 'w*0.5 + cos(i/10*TAU + t*1.2)*(min(w,h)*0.55)*(0.7+hover*0.35)',
+      y: 'h*0.5 + sin(i/10*TAU + t*1.2)*(min(w,h)*0.42)*(0.7+hover*0.35)' },
+  ],
+};
+let ignitesMounted = false;
+function mountIgnites() {
+  if (ignitesMounted) return;
+  ignitesMounted = true;
+  document.querySelectorAll('.contact__mail, .nav__cta, .menu__cta, .contact__socials a').forEach((el) => {
+    registerScene(mountBehind(el, IGNITE_SCENE));
+  });
+}
+
 function onScroll() {
   const hRect = heroEl.getBoundingClientRect();
   hero.setScroll(Math.min(1, Math.max(0, -hRect.top / (window.innerHeight * 0.9))));
@@ -43,6 +155,7 @@ function onScroll() {
   const p = Math.min(1, Math.max(0, window.scrollY / max));
   hero.setProgress(p);
   hero.setOffset(Math.sin(p * Math.PI * 2) * 0.42, Math.cos(p * Math.PI * 1.6) * 0.12);
+  updateScrollCue(p);
 
   
   if (!reduced) {
@@ -563,6 +676,9 @@ function applyConfig(config) {
     menuWrap.innerHTML = navLinksHtml + `<a href="#contact" class="menu__cta">${esc(config.nav.cta)}</a>`;
   }
   
+  mountIgnites();
+  scenes.forEach((s) => s.setAccent(config.accent));
+  
   const ml = document.querySelectorAll('.hero__meta--l span');
   const mr = document.querySelectorAll('.hero__meta--r span');
   config.hero.metaL.forEach((t, i) => { if (ml[i]) ml[i].textContent = t; });
@@ -992,6 +1108,8 @@ function revealSite() {
   gsap.set('.hero__title [data-reveal-y]', { yPercent: 110, y: 0 });
   gsap.to('.hero__title [data-reveal-y]', { yPercent: 0, y: 0, duration: 1.2, ease: 'expo.out', stagger: 0.09, delay: 0.3 });
   gsap.to('.hero__sub, .hero__meta span, .hero__scroll', { opacity: 1, y: 0, duration: 1, ease: 'expo.out', stagger: 0.05, delay: 0.7 });
+  if (cueEl) gsap.delayedCall(1.1, () => cueEl.classList.add('is-on'));
+  if (spineEl) gsap.delayedCall(1.2, () => { measureSpine(); spineEl.classList.add('is-on'); });
 }
 
 
@@ -1051,7 +1169,7 @@ async function boot() {
 }
 
 
-window.addEventListener('resize', () => { hero.resize(); play.resize(); measureWork(); });
+window.addEventListener('resize', () => { hero.resize(); play.resize(); measureWork(); measureSpine(); });
 
 let hidden = document.hidden;
 document.addEventListener('visibilitychange', () => { hidden = document.hidden; });
@@ -1093,9 +1211,11 @@ function raf(t) {
 }
 
 
-window.addEventListener('load', () => { measureWork(); measureMarquee(); });
+window.addEventListener('load', () => { measureWork(); measureMarquee(); measureSpine(); });
 window.addEventListener('resize', measureMarquee);
 boot();
+buildSpine();
+buildScrollArrow();
 runTitleLoop();
 
 if (quality.liquid) liquidType('.hero__title, .contact__title, .work__title', () => lenis.velocity);
