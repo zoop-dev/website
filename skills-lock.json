@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336"
+    },
+    "rive-interactive": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/rive-interactive/SKILL.md",
+      "computedHash": "f36fb49d447a5a688a5a57bd63d7897e282d0eed33560755480a45c476aeceb9"
+    },
+    "threejs-webgl": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/threejs-webgl/SKILL.md",
+      "computedHash": "9b2cfc1e6512ad6c41e4e9ba56c301d619c2cfd63722793258f4424013ec4b22"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+    }
+  }
+}
