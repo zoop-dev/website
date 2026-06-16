@@ -245,7 +245,8 @@ body.menu-open .menu__links a { opacity: 1; transform: translateY(0); }
 
 main { position: relative; z-index: 2; }
 section { position: relative; padding: 0 var(--pad); }
-.section-head__idx { font-family: var(--font-mono); font-size: .8rem; color: var(--accent); letter-spacing: .08em; display: inline-block; }
+.section-head__idx { font-family: var(--font-mono); font-size: .8rem; color: var(--accent); letter-spacing: .08em; display: inline-block; transition: text-shadow .5s ease; }
+.section-head__idx.idx-flash { text-shadow: 0 0 14px var(--accent); }
 
 [data-reveal], [data-reveal-y] { will-change: transform, opacity; }
 .line { display: block; overflow: hidden; }

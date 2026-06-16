@@ -112,6 +112,26 @@ const scenes = [];
 const registerScene = (inst) => { if (inst) scenes.push(inst); return inst; };
 
 
+function revealIndices() {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      io.unobserve(e.target);
+      const el = e.target, final = el.textContent, chars = final.split('');
+      el.classList.add('idx-flash');
+      let frame = 0; const steps = 13;
+      const id = setInterval(() => {
+        frame++;
+        const settled = Math.floor((frame / steps) * chars.length);
+        el.textContent = chars.map((c, i) => (i < settled || !/[0-9]/.test(c)) ? c : ((Math.random() * 10) | 0)).join('');
+        if (frame >= steps) { clearInterval(id); el.textContent = final; setTimeout(() => el.classList.remove('idx-flash'), 500); }
+      }, 32);
+    });
+  }, { threshold: 0.6 });
+  document.querySelectorAll('.section-head__idx').forEach((el) => io.observe(el));
+}
+
+
 function buildScrollArrow() {
   const host = document.querySelector('.hero__scroll i');
   if (!host) return;
@@ -1216,6 +1236,7 @@ window.addEventListener('resize', measureMarquee);
 boot();
 buildSpine();
 buildScrollArrow();
+revealIndices();
 runTitleLoop();
 
 if (quality.liquid) liquidType('.hero__title, .contact__title, .work__title', () => lenis.velocity);
