@@ -1,6 +1,11 @@
 import './styles/main.css';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
+import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+import { Flip } from 'gsap/Flip';
+gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, Flip);
 import HeroManager from './webgl/HeroManager.js';
 import Fluid from './webgl/Fluid.js';
 import { defaultConfig, normalizeConfig } from './config.default.js';
@@ -32,6 +37,7 @@ const lenis = new Lenis({
   prevent: (node) => !!(node && node.closest && node.closest('.projects-page')),
 });
 lenis.on('scroll', onScroll);
+lenis.on('scroll', ScrollTrigger.update);   
 lenis.scrollTo(0, { immediate: true });
 
 const heroEl = document.getElementById('hero');
@@ -551,8 +557,14 @@ function openProjects(push = true) {
     gsap.set(page, { yPercent: 0, y: 0 });
     gsap.timeline({ defaults: { ease: 'expo.out' } })
       .from('.projects-page__bar', { yPercent: -40, opacity: 0, duration: 0.6 }, 0)
-      .from('.projects-page__title', { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05)
-      .from('.pcard', { yPercent: 24, opacity: 0, duration: 0.7, stagger: 0.045 }, 0.14);
+      .from('.projects-page__title', { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05);
+    
+    
+    const cards = page.querySelectorAll('.pcard');
+    gsap.set(cards, { y: 46, scale: 0.94, opacity: 0 });
+    const state = Flip.getState(cards, { props: 'opacity,scale' });
+    gsap.set(cards, { clearProps: 'transform,opacity' });
+    Flip.from(state, { duration: 0.7, ease: 'expo.out', stagger: 0.045, absolute: true });
   });
 }
 function closeProjects(push = true) {
@@ -768,6 +780,20 @@ async function bootRemoteConfig() {
 }
 
 
+
+function setupGsapPlus() {
+  if (reduced) return;
+  
+  document.querySelectorAll('.play__copy, .about__lead').forEach((el) => {
+    gsap.fromTo(el, { yPercent: 6 }, { yPercent: -8, ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 0.6 } });
+  });
+  
+  const line = document.querySelector('.accent-line path');
+  if (line) gsap.from(line, { drawSVG: '0%', duration: 1.2, ease: 'power2.out',
+    scrollTrigger: { trigger: '.accent-line', start: 'top 88%', once: true } });
+}
+
 function setupReveals() {
   
   const io = new IntersectionObserver((entries) => {
@@ -801,11 +827,10 @@ function setupReveals() {
       if (!entry.isIntersecting) return;
       const el = entry.target;
       clipIO.unobserve(el);
-      if (reduced) { el.style.clipPath = 'none'; return; }
-      const o = { p: 0 };
-      gsap.to(o, { p: 1, duration: 1.1, ease: 'power4.out',
-        onUpdate: () => { el.style.clipPath = `polygon(0 0, ${o.p * 120}% 0, ${o.p * 100}% 100%, 0 100%)`; },
-        onComplete: () => { el.style.clipPath = 'none'; } });
+      el.style.clipPath = 'none';
+      if (reduced) return;
+      const split = new SplitText(el, { type: 'words', wordsClass: 'split-word' });
+      gsap.from(split.words, { yPercent: 120, opacity: 0, duration: 0.9, ease: 'expo.out', stagger: 0.06 });
     });
   }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
   document.querySelectorAll('.clip-reveal').forEach((el) => clipIO.observe(el));
@@ -1168,6 +1193,8 @@ async function boot() {
   applyConfig(normalizeConfig(defaultConfig));   
   measureWork(); measureMarquee();
   setupReveals();
+  setupGsapPlus();
+  ScrollTrigger.refresh();
 
   if (lite) { L.v = 100; setLoader(); revealSite(); await bootRemoteConfig(); if (isProjectsPath()) openProjects(false); return; }
 
@@ -1189,7 +1216,7 @@ async function boot() {
 }
 
 
-window.addEventListener('resize', () => { hero.resize(); play.resize(); measureWork(); measureSpine(); });
+window.addEventListener('resize', () => { hero.resize(); play.resize(); measureWork(); measureSpine(); ScrollTrigger.refresh(); });
 
 let hidden = document.hidden;
 document.addEventListener('visibilitychange', () => { hidden = document.hidden; });
@@ -1231,7 +1258,7 @@ function raf(t) {
 }
 
 
-window.addEventListener('load', () => { measureWork(); measureMarquee(); measureSpine(); });
+window.addEventListener('load', () => { measureWork(); measureMarquee(); measureSpine(); ScrollTrigger.refresh(); });
 window.addEventListener('resize', measureMarquee);
 boot();
 buildSpine();
