@@ -504,6 +504,18 @@ function makeAllTile(total) {
     + `<span class="panel__view">Open page</span>`;
   return a;
 }
+
+
+function uniqueShapes(n) {
+  const pool = Array.from({ length: 35 }, (_, i) => i);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const out = [];
+  while (out.length < n) out.push(...pool);
+  return out.slice(0, n);
+}
 function renderProjects(projects) {
   const track = document.getElementById('work-track');
   if (!track) return;
@@ -545,8 +557,9 @@ function renderProjects(projects) {
     fillLayer.style.transform = 'none';
     fillLayer.style.background = 'none';
 
+    const panelShapes = uniqueShapes(totalPanels);
     for (let i = 0; i < totalPanels; i++) {
-      const shapeNum = Math.floor(Math.random() * 35);
+      const shapeNum = panelShapes[i];
       const shapeUrl = `url('/shapes/shape-${shapeNum}.png')`;
       
       const baseShape = document.createElement('div');
@@ -826,9 +839,9 @@ const isChangelogPath = () => /^\/changelog(\.html)?\/?$/.test(location.pathname
 function buildChangelogList(items) {
   const list = document.getElementById('changelog-list');
   if (!list) return;
-  list.innerHTML = (items || []).map((item) => {
-    const shapeNum = Math.floor(Math.random() * 35);
-    const maskUrl = `url('/shapes/shape-${shapeNum}.png')`;
+  const shapes = uniqueShapes((items || []).length);
+  list.innerHTML = (items || []).map((item, idx) => {
+    const maskUrl = `url('/shapes/shape-${shapes[idx]}.png')`;
     return `
     <article class="changelog-item ${item.isRelease ? 'is-release' : ''}" style="--bullet-mask: ${maskUrl};">
       <div class="changelog-item__meta">
