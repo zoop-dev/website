@@ -546,7 +546,7 @@ function renderProjects(projects) {
     fillLayer.style.background = 'none';
 
     for (let i = 0; i < totalPanels; i++) {
-      const shapeNum = i % 35;
+      const shapeNum = Math.floor(Math.random() * 35);
       const shapeUrl = `url('/shapes/shape-${shapeNum}.png')`;
       
       const baseShape = document.createElement('div');
@@ -1661,16 +1661,19 @@ function showOnboard() {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+
+
+
 async function preloadShapes() {
-  const promises = [];
-  for (let i = 0; i < 35; i++) {
-    promises.push(new Promise((resolve) => {
-      const img = new Image();
-      img.onload = img.onerror = resolve;
-      img.src = `/shapes/shape-${i}.png`;
-    }));
-  }
-  await Promise.all(promises);
+  const used = new Set();
+  document.querySelectorAll('[style*="/shapes/shape-"]').forEach((el) => {
+    for (const m of el.getAttribute('style').matchAll(/shape-(\d+)\.png/g)) used.add(m[1]);
+  });
+  await Promise.all([...used].map((i) => new Promise((resolve) => {
+    const img = new Image();
+    img.onload = img.onerror = resolve;
+    img.src = `/shapes/shape-${i}.png`;
+  })));
 }
 
 async function boot() {
