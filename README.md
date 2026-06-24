@@ -1,6 +1,6 @@
 # zoop
 
-my lil corner of the internet — live at [zachy.cc](https://zachy.cc).
+my fun lil website — live at [zachy.cc](https://zachy.cc).
 
 interactive, real-time, slightly overcomplicated. lots of shaders. probably lags your pc (sorry).
 
@@ -30,7 +30,3 @@ npm run build    # build to dist/
 ```
 
 deploy goes to cloudflare pages (`wrangler pages deploy dist`).
-
-## heads up
-
-code here ships comment-free (theres a git filter that strips em on the way out) — my local copy keeps the comments. so dont panic if it looks a lil bare.
