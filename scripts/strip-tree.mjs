@@ -1,6 +1,3 @@
-// One-shot history rewrite helper: strips comments from every matching source
-// file under the current directory, in place. Invoked (by absolute path) from
-// `git filter-branch --tree-filter` so the whole history looks comment-free.
 import fs from 'node:fs';
 import path from 'node:path';
 import { stripContent } from './strip-lib.mjs';
