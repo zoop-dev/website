@@ -1,0 +1,30 @@
+# zoop — creative developer portfolio
+
+This is the personal portfolio of zoop (zachy.cc), a creative developer specializing in real-time WebGL, GLSL shaders, and interactive motion design. 
+
+## Tech Stack
+- Frontend: Vanilla JS + HTML5, Three.js, GSAP (ScrollTrigger, SplitText, DrawSVGPlugin, Flip), Lenis (smooth scroll).
+- Infrastructure: Cloudflare Pages & Workers, Cloudflare KV.
+
+## Pages & Navigation
+- `/` - Main application (the portfolio). Contains sections:
+  - Hero (Raymarched physical backdrop/mesh, morphs on scroll).
+  - Selected Work (Horizontal scroll gallery of featured projects).
+  - About (Creative skills, vibe, achievements).
+  - Play (Interactive GPU fluid/liquid-ink canvas).
+  - Contact (Contact form & email).
+- `/projects` - Complete index of all projects (copied dynamically from `/`).
+- `/admin` - Password-protected site configuration editor (writes to Cloudflare KV).
+
+## APIs
+- `GET /api/config` - Public, returns the dynamic layout config JSON (theme, text copy, projects list).
+- `POST /api/boop` - Increment the global boop counter.
+- `GET /api/boop` - Returns the current total boop count.
+
+## WebMCP Tools
+This website exposes interactive client-side WebMCP tools to visiting AI agents (via the `document.modelContext` API):
+- `boop_blob` - Increment the global boop counter and trigger a blob ripple.
+- `trigger_chaos` - Enable "chaos mode" on the page (screen shake, graphics modifications).
+- `barrel_roll` - Perform a 360-degree rotation of the website.
+- `splash_fluid` - Trigger a random ink splash on the fluid simulation canvas.
+- `get_portfolio_info` - Fetch the full dynamic JSON configuration (including all projects and contact details).

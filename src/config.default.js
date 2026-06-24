@@ -32,6 +32,7 @@ export const defaultConfig = {
   },
   marquee: ['WebGL', 'Shaders', 'Three.js', 'Motion', 'Creative Dev'],
   work: { title: 'Selected Work', hint: 'Scroll →' },
+  github: { barText: "Peek at what I'm building", barCta: 'Open source →' },
   about: {
     lead: "I'm zoop. I got way too into making pixels move, so now I build fast, interactive websites with way too many shaders.",
     columns: [
@@ -61,6 +62,7 @@ export const defaultConfig = {
     enter: 'enter →',
   },
   projectsPage: { title: "Everything\nI've made." },
+  changelogPage: { title: "Changelog.", buttonText: "Changelog →" },
   socials: [
     { label: 'Twitter / X', url: '#' },
     { label: 'GitHub', url: '#' },
@@ -76,6 +78,11 @@ export const defaultConfig = {
     { id: 'vellum', name: 'Vellum', tag: 'Editorial reading engine', description: 'A reading engine that treats long-form text like a designed object — typographic, paginated, quietly animated.', year: '2024', stack: 'Canvas, WebGL', accent: '#4ad6a0', url: '#', pinned: false },
     { id: 'pulse', name: 'Pulse', tag: 'Live data dashboard', description: 'A live dashboard streaming thousands of events a second into a calm, legible interface.', year: '2023', stack: 'D3, Workers, D1', accent: '#ff5c8a', url: '#', pinned: false },
   ],
+  changelog: [
+    { date: '2026-06-24', version: 'v1.2.0', title: 'WebMCP & llms.txt Support', isRelease: true, text: 'Added browser-native WebMCP agent tool registrations (boop_blob, trigger_chaos, barrel_roll, splash_fluid, get_portfolio_info) and launched the /llms.txt discovery endpoint.' },
+    { date: '2026-06-24', version: 'v1.1.0', title: 'Skeleton Screens Loader', isRelease: false, text: 'Implemented animated, glowing skeleton card elements during the initial boot and configuration warming phase.' },
+    { date: '2026-06-16', version: 'v1.0.0', title: 'Creative WebGL Refresh', isRelease: true, text: 'Complete redesign featuring a Three.js Glass centerpiece with procedural dispersion, pointer-responsive liquid ink simulation, customizable theme accents, and a cookie-authenticated administration panel.' }
+  ]
 };
 
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
@@ -105,6 +112,7 @@ export function normalizeConfig(raw) {
     }),
     marquee: arr(c.marquee, d.marquee),
     work: merge(d.work, c.work),
+    github: merge(d.github, c.github),
     about: {
       lead: (c.about && c.about.lead) || d.about.lead,
       columns: arr(c.about && c.about.columns, d.about.columns),
@@ -114,8 +122,10 @@ export function normalizeConfig(raw) {
     contact: merge(d.contact, c.contact),
     footer: merge(d.footer, c.footer),
     projectsPage: merge(d.projectsPage, c.projectsPage),
+    changelogPage: merge(d.changelogPage, c.changelogPage),
     onboarding: merge(d.onboarding, c.onboarding),
     socials: Array.isArray(c.socials) ? c.socials : d.socials,
     projects: arr(c.projects, d.projects),
+    changelog: arr(c.changelog, d.changelog),
   };
 }

@@ -35,6 +35,9 @@
       .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:1rem; margin-bottom:.8rem; position:relative; }
       .card .del { position:absolute; top:.6rem; right:.6rem; background:transparent; border:1px solid var(--line); color:var(--dim); border-radius:6px; padding:.2rem .5rem; cursor:pointer; font-size:.7rem; }
       .card .del:hover { border-color:var(--bad); color:var(--bad); }
+      .card .ord { position:absolute; top:.6rem; right:2.2rem; display:flex; gap:.3rem; }
+      .card .ord button { background:transparent; border:1px solid var(--line); color:var(--dim); border-radius:6px; padding:.2rem .4rem; cursor:pointer; font-size:.7rem; transition:border-color .2s, color .2s; }
+      .card .ord button:hover { border-color:var(--accent); color:var(--accent); }
       .add { background:transparent; border:1px dashed var(--line); color:var(--accent); border-radius:8px; padding:.6rem 1rem; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.8rem; }
       .add:hover { border-color:var(--accent); }
       .pinrow { display:flex; align-items:center; gap:.5rem; font-size:.85rem; color:var(--dim); }

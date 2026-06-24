@@ -17,12 +17,14 @@ import { liquidType } from './lib/liquid.js';
 import { mountScene, mountBehind } from './lib/anima-scene.js';
 import { quality } from './lib/quality.js';
 import { hexToRgba } from './lib/motion.js';
+import { initWebMCP } from './webmcp.js';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const hasHover = window.matchMedia('(hover: hover)').matches;
 
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
 window.scrollTo(0, 0);
 
 
@@ -63,7 +65,7 @@ function buildSpine() {
   spineNodes = SPINE_SECTIONS.map((s) => {
     const el = document.getElementById(s.id);
     const btn = document.createElement('button');
-    btn.className = 'spine__node';
+    btn.className = `spine__node is-node-${s.id}`;
     btn.innerHTML = `<span class="spine__label"><i>${s.n}</i> ${s.label}</span><span class="spine__dot"></span>`;
     btn.addEventListener('click', () => { if (el) lenis.scrollTo(el, { duration: 1.2 }); });
     spineEl.appendChild(btn);
@@ -73,10 +75,14 @@ function buildSpine() {
 }
 function measureSpine() {
   const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-  spineNodes.forEach((nd) => {
+  spineNodes.forEach((nd, i) => {
     if (!nd.el) return;
-    const top = nd.el.getBoundingClientRect().top + window.scrollY;
-    nd.frac = Math.min(1, Math.max(0, top / maxScroll));
+    if (i === spineNodes.length - 1) {
+      nd.frac = 1.0;
+    } else {
+      const top = nd.el.getBoundingClientRect().top + window.scrollY;
+      nd.frac = Math.min(1, Math.max(0, top / maxScroll));
+    }
     nd.btn.style.top = `${nd.frac * 100}%`;
   });
 }
@@ -108,7 +114,7 @@ function updateScrollCue(p) {
   spineNodes.forEach((n, i) => {
     n.btn.classList.toggle('is-active', i === active);
     const a = i === nearest ? absorb : 0;                  
-    n.dot.style.transform = `translate(50%,-50%) scale(${(1 + a * 1.8).toFixed(3)})`;
+    n.dot.style.setProperty('--scale', (1 + a * 1.8).toFixed(3));
     n.dot.style.boxShadow = a > 0.02 ? `0 0 ${(6 + a * 24).toFixed(0)}px var(--accent)` : '';
   });
 }
@@ -266,7 +272,8 @@ function updateWork() {
   const travelRange = Math.max(1, workEl.offsetHeight - window.innerHeight - holdPx);
   const p = Math.min(1, Math.max(0, -rect.top / travelRange));
   workTargetX = p * workMaxX;
-  workFill.style.transform = `scaleX(${p})`;
+  const fill = document.getElementById('work-progress');
+  if (fill) fill.style.clipPath = `inset(0 ${(1 - p) * 100}% 0 0)`;
 }
 
 
@@ -358,7 +365,7 @@ fetch('/api/boop').then((r) => (r.ok ? r.json() : null)).then((j) => { if (j) { 
 
 function syncSoundUI() { document.querySelectorAll('.js-sound-toggle').forEach((el) => el.setAttribute('aria-pressed', String(sound.enabled))); }
 function syncNotifyUI() {
-  const on = notify.on, state = on ? 'on' : (notify.permission === 'default' ? 'mid' : 'off');
+  const on = notify.on, state = on ? 'on' : 'off';
   document.querySelectorAll('.js-notify-toggle').forEach((el) => { el.setAttribute('aria-pressed', String(on)); el.dataset.state = state; });
 }
 function toggleSound() { sound.setEnabled(!sound.enabled); if (sound.enabled) sound.boop(); syncSoundUI(); }
@@ -483,7 +490,7 @@ function makePanel(pr, n) {
     + (pr.description ? `<p class="panel__desc">${esc(pr.description)}</p>` : '')
     + `<div class="chips">${stackChips(pr.stack)}</div></div>`
     + `<span class="panel__view">View case</span><span class="glare"></span>`;
-  if (pr.url && pr.url !== '#') a.addEventListener('click', () => window.open(pr.url, '_blank', 'noopener'));
+  a.addEventListener('click', () => openProjectModal(pr, String(n).padStart(2, '0'), a));
   bindTilt(a);
   return a;
 }
@@ -502,10 +509,69 @@ function renderProjects(projects) {
   if (!track) return;
   track.innerHTML = '';
   const pinned = projects.filter((p) => p.pinned);
-  (pinned.length ? pinned : projects).forEach((p, i) => track.appendChild(makePanel(p, i + 1)));
+  const items = pinned.length ? pinned : projects;
+  items.forEach((p, i) => track.appendChild(makePanel(p, i + 1)));
   const all = makeAllTile(projects.length);
-  all.addEventListener('click', () => openProjects());
-  track.appendChild(all);
+  if (all) {
+    all.addEventListener('click', () => openProjects());
+    track.appendChild(all);
+  }
+
+  const totalPanels = items.length + (all ? 1 : 0);
+  const progContainer = document.querySelector('.work__progress');
+  if (progContainer) {
+    progContainer.innerHTML = '';
+    progContainer.style.display = 'flex';
+    progContainer.style.justifyContent = 'space-between';
+    progContainer.style.background = 'none';
+    progContainer.style.height = '18px';
+    progContainer.style.position = 'relative';
+
+    const bgLayer = document.createElement('div');
+    bgLayer.style.display = 'flex';
+    bgLayer.style.width = '100%';
+    bgLayer.style.height = '100%';
+    bgLayer.style.gap = '12px';
+    
+    const fillLayer = document.createElement('div');
+    fillLayer.id = 'work-progress';
+    fillLayer.style.position = 'absolute';
+    fillLayer.style.inset = '0';
+    fillLayer.style.display = 'flex';
+    fillLayer.style.width = '100%';
+    fillLayer.style.height = '100%';
+    fillLayer.style.gap = '12px';
+    fillLayer.style.clipPath = 'inset(0 100% 0 0)';
+    fillLayer.style.transform = 'none';
+    fillLayer.style.background = 'none';
+
+    for (let i = 0; i < totalPanels; i++) {
+      const shapeNum = i % 35;
+      const shapeUrl = `url('/shapes/shape-${shapeNum}.png')`;
+      
+      const baseShape = document.createElement('div');
+      baseShape.style.flex = '1';
+      baseShape.style.height = '100%';
+      baseShape.style.background = 'var(--md-sys-color-surface-container-highest)';
+      baseShape.style.webkitMaskImage = shapeUrl;
+      baseShape.style.webkitMaskSize = 'contain';
+      baseShape.style.webkitMaskRepeat = 'no-repeat';
+      baseShape.style.webkitMaskPosition = 'center';
+      baseShape.style.maskImage = shapeUrl;
+      baseShape.style.maskSize = 'contain';
+      baseShape.style.maskRepeat = 'no-repeat';
+      baseShape.style.maskPosition = 'center';
+
+      const fillShape = baseShape.cloneNode(true);
+      fillShape.style.background = 'var(--md-sys-color-primary)';
+
+      bgLayer.appendChild(baseShape);
+      fillLayer.appendChild(fillShape);
+    }
+    
+    progContainer.appendChild(bgLayer);
+    progContainer.appendChild(fillLayer);
+  }
   bindCursor(track);
   measureWork();
 }
@@ -528,7 +594,7 @@ function buildProjectsGrid(projects) {
       + `<div><h3 class="pcard__name">${esc(pr.name)}</h3><p class="pcard__tag">${esc(pr.tag)}</p>`
       + (pr.description ? `<p class="pcard__desc">${esc(pr.description)}</p>` : '')
       + `<div class="chips">${stackChips(pr.stack)}</div></div><span class="glare"></span>`;
-    if (pr.url && pr.url !== '#') c.addEventListener('click', () => window.open(pr.url, '_blank', 'noopener'));
+    c.addEventListener('click', () => openProjectModal(pr, String(i + 1).padStart(2, '0'), c));
     bindTilt(c);
     grid.appendChild(c);
   });
@@ -584,11 +650,399 @@ function closeProjects(push = true) {
   });
 }
 document.getElementById('projects-close').addEventListener('click', () => closeProjects());
-window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && pageOpen) closeProjects(); });
+
+
+let activeCardEl = null;
+
+function openProjectModal(pr, indexText, cardEl) {
+  const m = document.getElementById('project-modal');
+  if (!m) return;
+  
+  activeCardEl = cardEl;
+
+  
+  document.getElementById('pm-idx').textContent = indexText;
+  document.getElementById('pm-year').textContent = pr.year;
+  document.getElementById('pm-name').textContent = pr.name;
+  document.getElementById('pm-tag').textContent = pr.tag;
+  document.getElementById('pm-desc').textContent = pr.description || pr.tag || '';
+  document.getElementById('pm-chips').innerHTML = stackChips(pr.stack);
+
+  
+  document.getElementById('pmf-idx').textContent = indexText;
+  document.getElementById('pmf-year').textContent = pr.year;
+  document.getElementById('pmf-name').textContent = pr.name;
+  document.getElementById('pmf-tag').textContent = pr.tag;
+  document.getElementById('pmf-chips').innerHTML = stackChips(pr.stack);
+  
+  const link = document.getElementById('pm-link');
+  if (pr.url) {
+    link.href = pr.url;
+    link.style.display = '';
+  } else {
+    link.style.display = 'none';
+  }
+  
+  m.style.setProperty('--accent-glow', hexToRgba(pr.accent || siteConfig.accent, 0.3));
+  m.querySelector('.project-modal__btn').style.background = pr.accent || siteConfig.accent;
+  
+  lenis.stop();
+  m.classList.add('is-open');
+  m.setAttribute('aria-hidden', 'false');
+  bindCursor(m);
+
+  const contentEl = m.querySelector('.project-modal__content');
+  const backdropEl = m.querySelector('.project-modal__backdrop');
+
+  if (cardEl && contentEl) {
+    const cardRect = cardEl.getBoundingClientRect();
+    const targetRect = contentEl.getBoundingClientRect();
+
+    const dx = cardRect.left + cardRect.width / 2 - (targetRect.left + targetRect.width / 2);
+    const dy = cardRect.top + cardRect.height / 2 - (targetRect.top + targetRect.height / 2);
+    const sw = cardRect.width / targetRect.width;
+    const sh = cardRect.height / targetRect.height;
+
+    
+    gsap.set(contentEl, {
+      x: dx,
+      y: dy,
+      scaleX: sw,
+      scaleY: sh,
+      rotationY: 0,
+      opacity: 1,
+      transformOrigin: "center center"
+    });
+
+    gsap.set(cardEl, { opacity: 0 }); 
+
+    gsap.killTweensOf([contentEl, backdropEl]);
+    
+    
+    gsap.timeline()
+      
+      .to(backdropEl, { opacity: 1, duration: 0.45, ease: "power2.out" })
+      
+      .to(contentEl, {
+        x: 0,
+        y: 0,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 0.45,
+        ease: "power2.inOut"
+      }, 0)
+      
+      .to(contentEl, {
+        rotationY: 180,
+        duration: 0.4,
+        ease: "back.out(1.2)"
+      });
+  } else {
+    gsap.killTweensOf([contentEl, backdropEl]);
+    gsap.set(backdropEl, { opacity: 0 });
+    gsap.set(contentEl, { rotationY: 180, scale: 0.92, y: 20, opacity: 0 });
+    gsap.timeline()
+      .to(backdropEl, { opacity: 1, duration: 0.45, ease: "power2.out" })
+      .to(contentEl, { scale: 1, y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0);
+  }
+}
+
+function closeProjectModal() {
+  const m = document.getElementById('project-modal');
+  if (!m) return;
+  
+  const contentEl = m.querySelector('.project-modal__content');
+  const backdropEl = m.querySelector('.project-modal__backdrop');
+  
+  if (activeCardEl && contentEl) {
+    const cardRect = activeCardEl.getBoundingClientRect();
+    const targetRect = contentEl.getBoundingClientRect();
+
+    const dx = cardRect.left + cardRect.width / 2 - (targetRect.left + targetRect.width / 2);
+    const dy = cardRect.top + cardRect.height / 2 - (targetRect.top + targetRect.height / 2);
+    const sw = cardRect.width / targetRect.width;
+    const sh = cardRect.height / targetRect.height;
+
+    gsap.killTweensOf([contentEl, backdropEl]);
+    
+    
+    gsap.timeline({
+      onComplete: () => {
+        m.classList.remove('is-open');
+        m.setAttribute('aria-hidden', 'true');
+        gsap.set(contentEl, { clearProps: "all" });
+        gsap.set(activeCardEl, { opacity: 1 }); 
+        if (!pageOpen) lenis.start();
+      }
+    })
+      
+      .to(contentEl, {
+        rotationY: 0,
+        duration: 0.35,
+        ease: "power2.inOut"
+      })
+      
+      .to(contentEl, {
+        x: dx,
+        y: dy,
+        scaleX: sw,
+        scaleY: sh,
+        duration: 0.45,
+        ease: "power2.inOut"
+      })
+      
+      .to(backdropEl, {
+        opacity: 0,
+        duration: 0.35,
+        ease: "power2.in"
+      }, "-=0.3");
+  } else {
+    m.classList.remove('is-open');
+    m.setAttribute('aria-hidden', 'true');
+    if (!pageOpen) lenis.start();
+  }
+}
+
+document.getElementById('project-modal-close').addEventListener('click', () => closeProjectModal());
+document.getElementById('project-modal-backdrop').addEventListener('click', () => closeProjectModal());
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const pm = document.getElementById('project-modal');
+    if (pm && pm.classList.contains('is-open')) {
+      closeProjectModal();
+    } else if (pageOpen) {
+      const clPage = document.getElementById('changelog-page');
+      if (clPage && clPage.classList.contains('is-open')) {
+        closeChangelog();
+      } else {
+        closeProjects();
+      }
+    }
+  }
+});
+const isChangelogPath = () => /^\/changelog(\.html)?\/?$/.test(location.pathname);
+
+function buildChangelogList(items) {
+  const list = document.getElementById('changelog-list');
+  if (!list) return;
+  list.innerHTML = (items || []).map((item) => {
+    const shapeNum = Math.floor(Math.random() * 35);
+    const maskUrl = `url('/shapes/shape-${shapeNum}.png')`;
+    return `
+    <article class="changelog-item ${item.isRelease ? 'is-release' : ''}" style="--bullet-mask: ${maskUrl};">
+      <div class="changelog-item__meta">
+        <span class="changelog-item__ver">${esc(item.version)}</span>
+        <span class="changelog-item__date">${esc(item.date)}</span>
+      </div>
+      <h3 class="changelog-item__title">${esc(item.title)}</h3>
+      <p class="changelog-item__text">${esc(item.text)}</p>
+    </article>
+  `}).join('');
+}
+
+function openChangelog(push = true) {
+  if (pageOpen || transition.active) return;
+  pageOpen = true;
+  routing = true;
+  sound.whoosh();
+  transition.setColors(siteConfig.accent);
+  transition.run(() => {
+    if (push && location.pathname !== '/changelog') history.pushState({ changelog: true }, '', '/changelog');
+    const page = document.getElementById('changelog-page');
+    buildChangelogList(siteConfig.changelog);
+    lenis.stop();
+    closeCtx();
+    page.classList.add('is-open');
+    page.setAttribute('aria-hidden', 'false');
+    page.scrollTop = 0;
+    page.getBoundingClientRect(); 
+    routing = false;
+    gsap.killTweensOf([page, '.changelog-item']);
+    gsap.set(page, { yPercent: 0, y: 0 });
+    gsap.timeline({ defaults: { ease: 'expo.out' } })
+      .from(page.querySelector('.projects-page__bar'), { yPercent: -40, opacity: 0, duration: 0.6 }, 0)
+      .from(page.querySelector('.projects-page__title'), { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05)
+      .from(page.querySelectorAll('.changelog-item'), { y: 30, opacity: 0, duration: 0.7, stagger: 0.06 }, 0.1);
+  });
+}
+
+function closeChangelog(push = true) {
+  if (!pageOpen || transition.active) return;
+  pageOpen = false;
+  routing = true;
+  sound.whoosh();
+  transition.setColors(siteConfig.accent);
+  transition.run(() => {
+    if (push && location.pathname === '/changelog') history.pushState({}, '', '/');
+    const page = document.getElementById('changelog-page');
+    gsap.killTweensOf(page);
+    page.classList.remove('is-open');
+    page.setAttribute('aria-hidden', 'true');
+    lenis.start();
+    routing = false;
+  });
+}
+
+document.getElementById('changelog-close').addEventListener('click', () => closeChangelog());
+
+
+let githubFetched = false;
+
+async function fetchGithubData() {
+  if (githubFetched) return;
+  const profileContainer = document.getElementById('gh-profile');
+  const gridContainer = document.getElementById('github-grid');
+  if (!profileContainer || !gridContainer) return;
+  
+  try {
+    const [userRes, reposRes] = await Promise.all([
+      fetch('https://api.github.com/users/zoop-dev'),
+      fetch('https://api.github.com/users/zoop-dev/repos?per_page=100&sort=updated')
+    ]);
+    
+    if (!userRes.ok || !reposRes.ok) throw new Error('API Error');
+    const user = await userRes.json();
+    const repos = await reposRes.json();
+    
+    profileContainer.innerHTML = `
+      <img src="${user.avatar_url}" alt="GitHub Avatar" class="github-profile__avatar">
+      <div class="github-profile__info">
+        <h2 class="github-profile__name">${esc(user.name || user.login)}</h2>
+        <p class="github-profile__bio">${esc(user.bio || 'Building things on the internet.')}</p>
+        <div class="github-profile__stats">
+          <span><b>${user.followers}</b> followers</span>
+          <span><b>${user.public_repos}</b> repos</span>
+        </div>
+        <a href="${user.html_url}" target="_blank" class="github-profile__follow" data-cursor="hover">Follow on GitHub ↗</a>
+      </div>
+    `;
+    
+    const validRepos = repos.filter(r => !r.fork).slice(0, 12); 
+    gridContainer.innerHTML = validRepos.map(r => `
+      <a href="${r.html_url}" target="_blank" class="gh-card" data-cursor="hover">
+        <h4 class="gh-card__name">${esc(r.name)}</h4>
+        <p class="gh-card__desc">${esc(r.description || 'No description provided.')}</p>
+        <div class="gh-card__meta">
+          <div class="gh-card__stat"><div class="gh-card__lang-dot"></div> ${esc(r.language || 'Code')}</div>
+          <div class="gh-card__stat">★ ${r.stargazers_count}</div>
+        </div>
+        <span class="glare"></span>
+      </a>
+    `).join('');
+    
+    document.querySelectorAll('.gh-card').forEach(bindTilt);
+    githubFetched = true;
+  } catch (err) {
+    console.error(err);
+    profileContainer.innerHTML = '<p>Failed to load GitHub data.</p>';
+  }
+}
+
+function openGithub(push = true) {
+  if (pageOpen || transition.active) return;
+  pageOpen = true;
+  routing = true;
+  sound.whoosh();
+  transition.setColors(siteConfig.accent);
+  transition.run(() => {
+    if (push && location.pathname !== '/github') history.pushState({ github: true }, '', '/github');
+    const page = document.getElementById('github-page');
+    fetchGithubData();
+    lenis.stop();
+    closeCtx();
+    page.classList.add('is-open');
+    page.setAttribute('aria-hidden', 'false');
+    page.scrollTop = 0;
+    page.getBoundingClientRect(); 
+    routing = false;
+    gsap.killTweensOf([page, '.github-profile', '.gh-card']);
+    gsap.set(page, { yPercent: 0, y: 0 });
+    gsap.timeline({ defaults: { ease: 'expo.out' } })
+      .from(page.querySelector('.projects-page__bar'), { yPercent: -40, opacity: 0, duration: 0.6 }, 0)
+      .from(page.querySelector('.github-page__header'), { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05)
+      .from(page.querySelector('.github-page__subtitle'), { y: 30, opacity: 0, duration: 0.6 }, 0.1)
+      .from(page.querySelectorAll('.gh-card'), { y: 30, opacity: 0, duration: 0.7, stagger: 0.045 }, 0.15);
+  });
+}
+
+function closeGithub(push = true) {
+  if (!pageOpen || transition.active) return;
+  pageOpen = false;
+  routing = true;
+  sound.whoosh();
+  transition.setColors(siteConfig.accent);
+  transition.run(() => {
+    if (push && location.pathname === '/github') history.pushState({}, '', '/');
+    const page = document.getElementById('github-page');
+    gsap.killTweensOf(page);
+    page.classList.remove('is-open');
+    page.setAttribute('aria-hidden', 'true');
+    lenis.start();
+    routing = false;
+  });
+}
+
+document.getElementById('github-close').addEventListener('click', () => closeGithub());
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && pageOpen && document.getElementById('changelog-page').classList.contains('is-open')) {
+    closeChangelog();
+  }
+  if (e.key === 'Escape' && pageOpen && document.getElementById('github-page').classList.contains('is-open')) {
+    closeGithub();
+  }
+});
+
+
+document.body.addEventListener('click', (e) => {
+  const clLink = e.target.closest('a[href="/changelog"], a[href="/changelog.html"]');
+  if (clLink) {
+    e.preventDefault();
+    document.body.classList.remove('menu-open');
+    if (pageOpen && document.getElementById('projects-page').classList.contains('is-open')) closeProjects(false);
+    openChangelog();
+  }
+  const ghLink = e.target.closest('a[href="/github"], a[href="/github.html"]');
+  if (ghLink) {
+    e.preventDefault();
+    document.body.classList.remove('menu-open');
+    if (pageOpen && document.getElementById('projects-page').classList.contains('is-open')) closeProjects(false);
+    openGithub();
+  }
+});
+
+const isGithubPath = () => /^\/github(\.html)?\/?$/.test(location.pathname);
+
+
+
+function openInitialRoute() {
+  if (isProjectsPath()) openProjects(false);
+  else if (isChangelogPath()) openChangelog(false);
+  else if (isGithubPath()) openGithub(false);
+}
+
 
 window.addEventListener('popstate', () => {
-  if (isProjectsPath()) openProjects(false);
-  else closeProjects(false);
+  const isChangelog = isChangelogPath();
+  const isGithub = isGithubPath();
+  const isProj = isProjectsPath();
+  
+  const clPage = document.getElementById('changelog-page');
+  const ghPage = document.getElementById('github-page');
+  const projPage = document.getElementById('projects-page');
+  
+  if (isChangelog) {
+    if (!clPage.classList.contains('is-open')) openChangelog(false);
+  } else if (isGithub) {
+    if (!ghPage.classList.contains('is-open')) openGithub(false);
+  } else if (isProj) {
+    if (!projPage.classList.contains('is-open')) openProjects(false);
+  } else {
+    if (clPage.classList.contains('is-open')) closeChangelog(false);
+    if (ghPage.classList.contains('is-open')) closeGithub(false);
+    if (projPage.classList.contains('is-open')) closeProjects(false);
+  }
 });
 
 
@@ -597,7 +1051,8 @@ const sbThumb = document.getElementById('scrollbar-thumb');
 let sbDrag = false, sbDownY = 0, sbDownScroll = 0, sbTrack = 0, sbThumbH = 40;
 function scrollCtx() {
   if (pageOpen) {
-    const pg = document.getElementById('projects-page');
+    const isChangelog = document.getElementById('changelog-page')?.classList.contains('is-open');
+    const pg = document.getElementById(isChangelog ? 'changelog-page' : 'projects-page');
     return { scroll: pg.scrollTop, limit: pg.scrollHeight - pg.clientHeight, view: pg.clientHeight, set: (v) => { pg.scrollTop = v; } };
   }
   const limit = lenis.limit || (document.documentElement.scrollHeight - window.innerHeight);
@@ -687,6 +1142,7 @@ function renderStats(stats) {
 
 function applyConfig(config) {
   siteConfig = config;
+  if (window.zoop) window.zoop.config = config;
   if (!heroStyleOverride && config.heroStyle) hero.setStyle(config.heroStyle);
   document.documentElement.style.setProperty('--accent', config.accent);
   hero.setAccent(config.accent);
@@ -722,6 +1178,9 @@ function applyConfig(config) {
   setText('.work__title', config.work.title);
   setText('.work__hint', config.work.hint);
   
+  setText('.gh-bar__text', config.github?.barText || "Peek at what I'm building");
+  setText('.gh-bar__cta', config.github?.barCta || 'Open source →');
+  
   renderAboutLead(config.about.lead);
   renderAboutColumns(config.about.columns);
   
@@ -734,6 +1193,14 @@ function applyConfig(config) {
   setLineText('.contact__title', [config.contact.line1, config.contact.em, config.contact.line3]);
   const mail = document.querySelector('.contact__mail');
   if (mail) { mail.textContent = config.email; mail.href = `mailto:${config.email}`; }
+  const cpill = document.querySelector('.contact__changelog-ver');
+  if (cpill && config.changelog && config.changelog.length) {
+    cpill.textContent = config.changelog[0].version || 'v1.0.0';
+  }
+  const clPillLabel = document.querySelector('.contact__changelog-label');
+  if (clPillLabel) {
+    clPillLabel.textContent = config.changelogPage?.buttonText || 'Changelog →';
+  }
   const sw = document.querySelector('.contact__socials');
   if (sw) {
     sw.innerHTML = config.socials.map((s) => `<a href="${esc(s.url)}" data-cursor="zoom"${s.url && s.url !== '#' ? ' target="_blank" rel="noopener"' : ''}>${esc(s.label)}</a>`).join('');
@@ -741,11 +1208,16 @@ function applyConfig(config) {
   }
   
   const footSpans = document.querySelectorAll('.footer span');
-  if (footSpans[0]) footSpans[0].textContent = config.footer.left;
+  if (footSpans[0]) {
+    footSpans[0].textContent = config.footer.left;
+  }
   if (footSpans[1]) footSpans[1].textContent = config.footer.mid;
   
   const pgTitle = document.getElementById('projects-page-title');
   if (pgTitle) pgTitle.innerHTML = esc(config.projectsPage.title).replace(/\n/g, '<br>');
+  
+  const clTitle = document.getElementById('changelog-page-title');
+  if (clTitle) clTitle.innerHTML = esc(config.changelogPage?.title || 'Changelog.').replace(/\n/g, '<br>');
   
   const ob = config.onboarding;
   setText('.onboard__hi', ob.hi);
@@ -1183,20 +1655,38 @@ function showOnboard() {
     gsap.to('.onboard__card', { yPercent: -6, opacity: 0, scale: 0.96, duration: 0.5, ease: 'power2.in' });
     gsap.to(ob, { opacity: 0, duration: 0.6, ease: 'power2.inOut', delay: 0.1, onComplete: () => { ob.classList.remove('is-open'); ob.style.display = 'none'; } });
     revealSite();
-    if (isProjectsPath()) openProjects(false);
+    openInitialRoute();
   });
 }
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+async function preloadShapes() {
+  const promises = [];
+  for (let i = 0; i < 35; i++) {
+    promises.push(new Promise((resolve) => {
+      const img = new Image();
+      img.onload = img.onerror = resolve;
+      img.src = `/shapes/shape-${i}.png`;
+    }));
+  }
+  await Promise.all(promises);
+}
+
 async function boot() {
-  applyConfig(normalizeConfig(defaultConfig));   
+  applyConfig(normalizeConfig(defaultConfig));
+  initWebMCP();
+  await preloadShapes();
   measureWork(); measureMarquee();
   setupReveals();
   setupGsapPlus();
   ScrollTrigger.refresh();
 
-  if (lite) { L.v = 100; setLoader(); revealSite(); await bootRemoteConfig(); if (isProjectsPath()) openProjects(false); return; }
+  if (lite) {
+    L.v = 100; setLoader(); revealSite(); await bootRemoteConfig();
+    openInitialRoute();
+    return;
+  }
 
   const crawl = gsap.to(L, { v: 88, duration: 1.3, ease: 'power1.out', onUpdate: setLoader });
   let status = 'default';
@@ -1211,7 +1701,8 @@ async function boot() {
   gsap.to(L, { v: 100, duration: 0.5, ease: 'power2.inOut', onUpdate: setLoader,
     onComplete: () => {
       if (firstVisit) { showOnboard(); return; }
-      revealSite(); if (isProjectsPath()) openProjects(false);
+      revealSite();
+      openInitialRoute();
     } });
 }
 

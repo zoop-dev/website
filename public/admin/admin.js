@@ -11,6 +11,7 @@ const DEFAULTS = {
   hero: { metaL: ['Independent', 'Professional tinkerer'], metaR: ['Est. whenever', 'Mostly caffeine'], line1: 'I make', em: 'weird', line3: 'websites.', sub: 'The kind that go *woosh*, *bloop*, and occasionally *whoa*. Real-time, interactive, and running on way too many shaders.' },
   marquee: ['WebGL', 'Shaders', 'Three.js', 'Motion', 'Creative Dev'],
   work: { title: 'Selected Work', hint: 'Scroll →' },
+  github: { barText: "Peek at what I'm building", barCta: 'Open source →' },
   about: {
     lead: "I'm zoop. I got way too into making pixels move, so now I build fast, interactive websites with way too many shaders.",
     columns: [
@@ -30,6 +31,7 @@ const DEFAULTS = {
   footer: { left: '© 2026 zoop · made with caffeine & shaders', mid: 'No designers were harmed' },
   onboarding: { hi: 'welcome to', title: 'zoop', em: '.', sub: 'a couple optional extras. you can change em anytime up top.', soundLabel: 'sound', soundDesc: 'blips, bloops & flowing water', notifLabel: 'notifs', notifDesc: 'the occasional friendly nudge', enter: 'enter →' },
   projectsPage: { title: "Everything\nI've made." },
+  changelogPage: { title: "Changelog.", buttonText: "Changelog →" },
   socials: [
     { label: 'Twitter / X', url: '#' }, { label: 'GitHub', url: '#' }, { label: 'Dribbble', url: '#' }, { label: 'LinkedIn', url: '#' },
   ],
@@ -37,6 +39,11 @@ const DEFAULTS = {
     { id: 'aurora', name: 'Aurora Engine', tag: 'Real-time GPU fluid', year: '2026', stack: 'WebGL · GLSL', accent: '#2bb8ff', url: '#', pinned: true },
     { id: 'monolith', name: 'Monolith', tag: 'Immersive brand site', year: '2025', stack: 'Three.js · GSAP', accent: '#7a5cff', url: '#', pinned: true },
     { id: 'drift', name: 'Drift / OS', tag: '3D product configurator', year: '2025', stack: 'R3F · Blender', accent: '#2bd8ff', url: '#', pinned: true },
+  ],
+  changelog: [
+    { date: '2026-06-24', version: 'v1.2.0', title: 'WebMCP & llms.txt Support', isRelease: true, text: 'Added browser-native WebMCP agent tool registrations (boop_blob, trigger_chaos, barrel_roll, splash_fluid, get_portfolio_info) and launched the /llms.txt discovery endpoint.' },
+    { date: '2026-06-24', version: 'v1.1.0', title: 'Skeleton Screens Loader', isRelease: false, text: 'Implemented animated, glowing skeleton card elements during the initial boot and configuration warming phase.' },
+    { date: '2026-06-16', version: 'v1.0.0', title: 'Creative WebGL Refresh', isRelease: true, text: 'Complete redesign featuring a Three.js Glass centerpiece with procedural dispersion, pointer-responsive liquid ink simulation, customizable theme accents, and a cookie-authenticated administration panel.' }
   ],
 };
 
@@ -142,6 +149,11 @@ function buildForm() {
       <div class="field"><label>Section title</label><input type="text" data-path="work.title" value="${attr(c.work.title)}"></div>
       <div class="field"><label>Scroll hint</label><input type="text" data-path="work.hint" value="${attr(c.work.hint)}"></div>
     </div>
+    <div class="row two">
+      <div class="field"><label>GitHub bar · text</label><input type="text" data-path="github.barText" value="${attr(c.github.barText)}"></div>
+      <div class="field"><label>GitHub bar · button label</label><input type="text" data-path="github.barCta" value="${attr(c.github.barCta)}"></div>
+    </div>
+    <div class="hint">Full-width bar under Work that opens your /github page.</div>
 
     <h2>Projects</h2>
     <div class="hint">Pinned projects show on the home gallery. Everything appears on /projects.</div>
@@ -177,6 +189,16 @@ function buildForm() {
     <h2>Projects page</h2>
     <div class="field"><label>Title (new line = line break)</label><textarea data-path="projectsPage.title">${esc(c.projectsPage.title)}</textarea></div>
 
+    <h2>Changelog page</h2>
+    <div class="row two">
+      <div class="field"><label>Title (new line = line break)</label><textarea data-path="changelogPage.title">${esc(c.changelogPage.title || 'Changelog.')}</textarea></div>
+      <div class="field"><label>Button label (below email)</label><input type="text" data-path="changelogPage.buttonText" value="${attr(c.changelogPage.buttonText || 'Changelog →')}"></div>
+    </div>
+
+    <h2>Changelog entries</h2>
+    <div class="hint">Changelog entries displayed on the /changelog page.</div>
+    <div id="list-changelog"></div><button class="add" type="button" data-add="changelog">+ changelog entry</button>
+
     <h2>Onboarding (first visit)</h2>
     <div class="row three">
       <div class="field"><label>Greeting</label><input type="text" data-path="onboarding.hi" value="${attr(c.onboarding.hi)}"></div>
@@ -194,7 +216,7 @@ function buildForm() {
     </div>
     <div class="field"><label>Enter button</label><input type="text" data-path="onboarding.enter" value="${attr(c.onboarding.enter)}"></div>
   `;
-  renderNav(); renderTitlePhrases(); renderMarquee(); renderProjects(); renderColumns(); renderStats(); renderSocials();
+  renderNav(); renderTitlePhrases(); renderMarquee(); renderProjects(); renderColumns(); renderStats(); renderSocials(); renderChangelog();
   
   const col = $('#accent-color'), txt = $('#accent-text');
   col.addEventListener('input', () => { txt.value = col.value; });
@@ -206,6 +228,16 @@ function buildForm() {
 
 function del(btn) { btn.closest('.card, .field').remove(); }
 function mountDel(card) { card.querySelector('.del').addEventListener('click', () => del(card.querySelector('.del'))); }
+function mountOrd(card, cls) {
+  card.querySelector('.up').addEventListener('click', () => {
+    const prev = card.previousElementSibling;
+    if (prev && prev.classList.contains(cls)) card.parentNode.insertBefore(card, prev);
+  });
+  card.querySelector('.down').addEventListener('click', () => {
+    const next = card.nextElementSibling;
+    if (next && next.classList.contains(cls)) card.parentNode.insertBefore(next, card);
+  });
+}
 
 function renderMarquee() {
   const m = $('#list-marquee'); m.innerHTML = '';
@@ -241,6 +273,10 @@ function renderProjects() {
 function rowProject(p = {}) {
   const c = document.createElement('div'); c.className = 'card project-row';
   c.innerHTML = `<button class="del" type="button">✕</button>
+    <div class="ord">
+      <button class="up" type="button">▲</button>
+      <button class="down" type="button">▼</button>
+    </div>
     <div class="row two">
       <div class="field"><label>Name</label><input type="text" data-field="name" value="${attr(p.name)}"></div>
       <div class="field"><label>Tag (short)</label><input type="text" data-field="tag" value="${attr(p.tag)}"></div>
@@ -257,6 +293,7 @@ function rowProject(p = {}) {
     </div>`;
   c.dataset.id = p.id || '';
   mountDel(c);
+  mountOrd(c, 'project-row');
   return c;
 }
 function renderColumns() {
@@ -306,6 +343,28 @@ function rowSocial(s = {}) {
   mountDel(c);
   return c;
 }
+function renderChangelog() {
+  const m = $('#list-changelog'); m.innerHTML = '';
+  (cfg.changelog || []).forEach((ch) => m.appendChild(rowChangelog(ch)));
+}
+function rowChangelog(ch = {}) {
+  const c = document.createElement('div'); c.className = 'card changelog-row';
+  c.innerHTML = `<button class="del" type="button">✕</button>
+    <div class="ord">
+      <button class="up" type="button">▲</button>
+      <button class="down" type="button">▼</button>
+    </div>
+    <div class="row three">
+      <div class="field"><label>Version</label><input type="text" data-field="version" value="${attr(ch.version)}" placeholder="v1.0.0"></div>
+      <div class="field"><label>Date</label><input type="text" data-field="date" value="${attr(ch.date)}" placeholder="YYYY-MM-DD"></div>
+      <label class="pinrow" style="margin-top:1.5rem"><input type="checkbox" data-field="isRelease" ${ch.isRelease ? 'checked' : ''}> Release (prominent indicator)</label>
+    </div>
+    <div class="field"><label>Title</label><input type="text" data-field="title" value="${attr(ch.title)}" placeholder="Feature Title"></div>
+    <div class="field"><label>Description / Text</label><textarea data-field="text" placeholder="Details about this change...">${esc(ch.text)}</textarea></div>`;
+  mountDel(c);
+  mountOrd(c, 'changelog-row');
+  return c;
+}
 function addRow(kind) {
   if (kind === 'nav') $('#list-nav').appendChild(rowNav({ href: '#' }));
   if (kind === 'titlephrases') $('#list-titlephrases').appendChild(rowMarquee('', 'titlephrase-row'));
@@ -314,6 +373,7 @@ function addRow(kind) {
   if (kind === 'columns') $('#list-columns').appendChild(rowColumn({ title: 'New column', items: [] }));
   if (kind === 'stats') $('#list-stats').appendChild(rowStat({ format: 'plain' }));
   if (kind === 'socials') $('#list-socials').appendChild(rowSocial({ url: '#' }));
+  if (kind === 'changelog') $('#list-changelog').appendChild(rowChangelog({ version: 'v1.0.0', date: new Date().toISOString().split('T')[0], title: '', isRelease: false, text: '' }));
 }
 
 
@@ -339,6 +399,13 @@ function collect() {
     return { value: raw !== '' && !Number.isNaN(num) ? num : raw, label: field(r, 'label'), format: field(r, 'format') };
   });
   out.socials = [...document.querySelectorAll('.social-row')].map((r) => ({ label: field(r, 'label'), url: field(r, 'url') })).filter((s) => s.label.trim());
+  out.changelog = [...document.querySelectorAll('.changelog-row')].map((r) => ({
+    version: field(r, 'version'),
+    date: field(r, 'date'),
+    title: field(r, 'title'),
+    isRelease: field(r, 'isRelease'),
+    text: field(r, 'text')
+  })).filter((ch) => ch.version.trim() || ch.title.trim());
   return out;
 }
 

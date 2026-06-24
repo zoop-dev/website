@@ -260,6 +260,16 @@
       </section>
 
       
+      <a class="gh-bar" href="/github" data-cursor="zoom" data-reveal>
+        <span class="gh-bar__icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="22" height="22" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        </span>
+        <span class="gh-bar__text"></span>
+        <span class="gh-bar__cta"></span>
+        <span class="gh-bar__glow" aria-hidden="true"></span>
+      </a>
+
+      
       <section class="about" id="about">
         <span class="section-head__idx" data-reveal>(02)</span>
         <p class="about__lead">
@@ -328,6 +338,13 @@
         </h2>
         <svg class="accent-line" viewBox="0 0 320 12" fill="none" aria-hidden="true"><path d="M4 7 C 90 1, 230 1, 316 7" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/></svg>
         <a class="contact__mail" href="mailto:hi@zachy.cc" data-cursor="zoom">hi@zachy.cc</a>
+        <div class="contact__changelog-pill-wrap">
+          <a class="contact__changelog-pill" href="/changelog" data-cursor="zoom">
+            <span class="contact__changelog-ver">v1.2.0</span>
+            <span class="contact__changelog-dot">·</span>
+            <span class="contact__changelog-label">Changelog →</span>
+          </a>
+        </div>
         <div class="contact__socials">
           <a href="#" data-cursor="zoom">Twitter / X</a>
           <a href="#" data-cursor="zoom">GitHub</a>
@@ -353,6 +370,76 @@
       <div class="projects-page__grid" id="projects-grid"></div>
       <div class="projects-page__foot">— that's the lot —</div>
     </section>
+
+    <section class="projects-page changelog-page" id="changelog-page" aria-hidden="true" data-lenis-prevent>
+      <div class="projects-page__bar">
+        <span class="projects-page__idx">Build history</span>
+        <button class="projects-page__close" id="changelog-close" type="button" data-cursor="zoom">Back ✕</button>
+      </div>
+      <h2 class="projects-page__title" id="changelog-page-title">Changelog.</h2>
+      <div class="changelog-page__list" id="changelog-list"></div>
+      <div class="projects-page__foot">— end of changes —</div>
+    </section>
+
+    
+    <section class="projects-page github-page" id="github-page" aria-hidden="true" data-lenis-prevent>
+      <div class="projects-page__bar">
+        <span class="projects-page__idx">Open Source</span>
+        <button class="projects-page__close" id="github-close" type="button" data-cursor="zoom">Back ✕</button>
+      </div>
+      
+      <div class="github-page__header">
+        <div class="github-profile" id="gh-profile">
+          
+        </div>
+      </div>
+      
+      <h3 class="github-page__subtitle">Latest Repositories</h3>
+      <div class="github-page__grid" id="github-grid">
+        
+      </div>
+      <div class="projects-page__foot">— end of repos —</div>
+    </section>
+
+    
+    <div class="project-modal" id="project-modal" aria-hidden="true" role="dialog">
+      <div class="project-modal__backdrop" id="project-modal-backdrop"></div>
+      <div class="project-modal__content">
+        
+        <div class="project-modal__front">
+          <div class="panel__top">
+            <span class="panel__idx" id="pmf-idx">01</span>
+            <span class="panel__year" id="pmf-year">2026</span>
+          </div>
+          <div class="panel__body" style="margin-top: 2rem;">
+            <h3 class="panel__name" id="pmf-name">Monolith</h3>
+            <p class="panel__tag" id="pmf-tag">Immersive brand site</p>
+            <div class="chips" id="pmf-chips" style="margin-top: 1rem;"></div>
+          </div>
+          <span class="panel__view" style="margin-top: auto; opacity: 0.8; font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .1rem; color: var(--accent);">Flipping...</span>
+        </div>
+
+        
+        <div class="project-modal__back">
+          <button class="project-modal__close" id="project-modal-close" type="button" data-cursor="zoom">✕</button>
+          <div class="project-modal__body">
+            <div class="project-modal__header">
+              <span class="project-modal__idx" id="pm-idx">01</span>
+              <span class="project-modal__year" id="pm-year">2026</span>
+            </div>
+            <h2 class="project-modal__name" id="pm-name">Monolith</h2>
+            <p class="project-modal__tag" id="pm-tag">Immersive brand site</p>
+            <div class="project-modal__main">
+              <p class="project-modal__desc" id="pm-desc">A single-page brand experience built around one bold 3D centerpiece and a scroll that actually tells a story.</p>
+              <div class="project-modal__chips" id="pm-chips"></div>
+            </div>
+            <div class="project-modal__footer">
+              <a class="project-modal__btn" id="pm-link" href="#" target="_blank" rel="noopener" data-cursor="zoom">Visit Project ↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     
     <ul class="ctx" id="ctx" role="menu" aria-hidden="true">
