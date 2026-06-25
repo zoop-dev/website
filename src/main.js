@@ -618,15 +618,20 @@ function buildProjectsGrid(projects) {
   });
   bindCursor(grid);
 }
-function openProjects(push = true) {
+
+
+
+function runRoute(instant, fn) {
+  if (instant) { fn(); return; }
+  transition.setColors(siteConfig.accent);
+  transition.run(fn);
+}
+function openProjects(push = true, instant = false) {
   if (pageOpen || transition.active) return;
   pageOpen = true;
   routing = true;
   sound.whoosh();
-  transition.setColors(siteConfig.accent);
-  
-  
-  transition.run(() => {
+  runRoute(instant, () => {
     if (push && location.pathname !== '/projects') history.pushState({ projects: true }, '', '/projects');
     const page = document.getElementById('projects-page');
     buildProjectsGrid(siteConfig.projects);
@@ -637,18 +642,17 @@ function openProjects(push = true) {
     page.scrollTop = 0;
     page.getBoundingClientRect(); 
     routing = false;
+    const d = instant ? 0.5 : 0;
     gsap.killTweensOf([page, '.projects-page__title', '.pcard']);
     gsap.set(page, { yPercent: 0, y: 0 });
-    gsap.timeline({ defaults: { ease: 'expo.out' } })
+    gsap.timeline({ defaults: { ease: 'expo.out' }, delay: d })
       .from('.projects-page__bar', { yPercent: -40, opacity: 0, duration: 0.6 }, 0)
       .from('.projects-page__title', { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05);
-    
-    
     const cards = page.querySelectorAll('.pcard');
     gsap.set(cards, { y: 46, scale: 0.94, opacity: 0 });
     const state = Flip.getState(cards, { props: 'opacity,scale' });
     gsap.set(cards, { clearProps: 'transform,opacity' });
-    Flip.from(state, { duration: 0.7, ease: 'expo.out', stagger: 0.045, absolute: true });
+    Flip.from(state, { duration: 0.7, ease: 'expo.out', stagger: 0.045, absolute: true, delay: d });
   });
 }
 function closeProjects(push = true) {
@@ -859,13 +863,12 @@ function buildChangelogList(items) {
   `}).join('');
 }
 
-function openChangelog(push = true) {
+function openChangelog(push = true, instant = false) {
   if (pageOpen || transition.active) return;
   pageOpen = true;
   routing = true;
   sound.whoosh();
-  transition.setColors(siteConfig.accent);
-  transition.run(() => {
+  runRoute(instant, () => {
     if (push && location.pathname !== '/changelog') history.pushState({ changelog: true }, '', '/changelog');
     const page = document.getElementById('changelog-page');
     buildChangelogList(siteConfig.changelog);
@@ -878,7 +881,7 @@ function openChangelog(push = true) {
     routing = false;
     gsap.killTweensOf([page, '.changelog-item']);
     gsap.set(page, { yPercent: 0, y: 0 });
-    gsap.timeline({ defaults: { ease: 'expo.out' } })
+    gsap.timeline({ defaults: { ease: 'expo.out' }, delay: instant ? 0.5 : 0 })
       .from(page.querySelector('.projects-page__bar'), { yPercent: -40, opacity: 0, duration: 0.6 }, 0)
       .from(page.querySelector('.projects-page__title'), { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05)
       .from(page.querySelectorAll('.changelog-item'), { y: 30, opacity: 0, duration: 0.7, stagger: 0.06 }, 0.1);
@@ -981,13 +984,12 @@ document.getElementById('scripts-list').addEventListener('click', (e) => {
   }
 });
 
-function openScripts(push = true) {
+function openScripts(push = true, instant = false) {
   if (pageOpen || transition.active) return;
   pageOpen = true;
   routing = true;
   sound.whoosh();
-  transition.setColors(siteConfig.accent);
-  transition.run(() => {
+  runRoute(instant, () => {
     if (push && location.pathname !== '/scripts') history.pushState({ scripts: true }, '', '/scripts');
     const page = document.getElementById('scripts-page');
     buildScriptsList(siteConfig.scripts);
@@ -1000,7 +1002,7 @@ function openScripts(push = true) {
     routing = false;
     gsap.killTweensOf([page, '.scr']);
     gsap.set(page, { yPercent: 0, y: 0 });
-    gsap.timeline({ defaults: { ease: 'expo.out' } })
+    gsap.timeline({ defaults: { ease: 'expo.out' }, delay: instant ? 0.5 : 0 })
       .from(page.querySelector('.projects-page__bar'), { yPercent: -40, opacity: 0, duration: 0.6 }, 0)
       .from(page.querySelector('.projects-page__title'), { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05)
       .from(page.querySelectorAll('.scr'), { y: 30, opacity: 0, duration: 0.7, stagger: 0.08 }, 0.1);
@@ -1079,13 +1081,12 @@ async function fetchGithubData() {
   }
 }
 
-function openGithub(push = true) {
+function openGithub(push = true, instant = false) {
   if (pageOpen || transition.active) return;
   pageOpen = true;
   routing = true;
   sound.whoosh();
-  transition.setColors(siteConfig.accent);
-  transition.run(() => {
+  runRoute(instant, () => {
     if (push && location.pathname !== '/github') history.pushState({ github: true }, '', '/github');
     const page = document.getElementById('github-page');
     fetchGithubData();
@@ -1098,7 +1099,7 @@ function openGithub(push = true) {
     routing = false;
     gsap.killTweensOf([page, '.github-profile', '.gh-card']);
     gsap.set(page, { yPercent: 0, y: 0 });
-    gsap.timeline({ defaults: { ease: 'expo.out' } })
+    gsap.timeline({ defaults: { ease: 'expo.out' }, delay: instant ? 0.5 : 0 })
       .from(page.querySelector('.projects-page__bar'), { yPercent: -40, opacity: 0, duration: 0.6 }, 0)
       .from(page.querySelector('.github-page__header'), { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05)
       .from(page.querySelector('.github-page__subtitle'), { y: 30, opacity: 0, duration: 0.6 }, 0.1)
@@ -1164,10 +1165,10 @@ const isGithubPath = () => /^\/github(\.html)?\/?$/.test(location.pathname);
 
 
 function openInitialRoute() {
-  if (isProjectsPath()) openProjects(false);
-  else if (isChangelogPath()) openChangelog(false);
-  else if (isGithubPath()) openGithub(false);
-  else if (isScriptsPath()) openScripts(false);
+  if (isProjectsPath()) openProjects(false, true);
+  else if (isChangelogPath()) openChangelog(false, true);
+  else if (isGithubPath()) openGithub(false, true);
+  else if (isScriptsPath()) openScripts(false, true);
 }
 
 

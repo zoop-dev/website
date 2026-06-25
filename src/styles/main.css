@@ -257,6 +257,19 @@ ul { list-style: none; }
 .loader__retry:hover { border-color: var(--accent); color: var(--accent); }
 
 
+@media (max-width: 640px) {
+  .loader { align-items: center; padding: var(--pad) clamp(1.5rem, 8vw, 3rem); }
+  .loader__inner { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.55rem; }
+  .loader__name { font-size: clamp(3rem, 20vw, 5.5rem); line-height: 0.95; letter-spacing: -0.02em; }
+  .loader__o { width: 0.78em; height: 0.78em; vertical-align: -0.06em; }
+  .loader__o svg { filter: drop-shadow(0 0 18px var(--md-sys-color-primary)); }
+  .loader__count { font-size: 1.05rem; }
+  .loader__bar { width: 64%; max-width: 280px; height: 2px; border-radius: 2px; margin-top: 0.5rem; }
+  .loader__status { text-align: center; margin-top: 0.7rem; }
+  .loader__retry { justify-self: center; align-self: center; }
+}
+
+
 .nav {
   position: fixed; top: 0; left: 0; width: 100%; z-index: 80;
   display: flex; align-items: center; justify-content: space-between;
