@@ -13,6 +13,7 @@ const ROUTES = [
   { out: 'og-projects.png',  lines: ['everything', "i've made"], sub: '(the work)',  url: 'zachy.cc/projects' },
   { out: 'og-changelog.png', lines: ['what i', 'shipped'],       sub: '(changelog)', url: 'zachy.cc/changelog' },
   { out: 'og-github.png',    lines: ['open', 'source'],          sub: '(on github)', url: 'zachy.cc/github' },
+  { out: 'og-scripts.png',   lines: ['scripts', '& tools'],      sub: '(grab em)',   url: 'zachy.cc/scripts' },
 ];
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');

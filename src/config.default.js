@@ -63,6 +63,16 @@ export const defaultConfig = {
   },
   projectsPage: { title: "Everything\nI've made." },
   changelogPage: { title: "Changelog.", buttonText: "Changelog →" },
+  scriptsPage: { title: "scripts &\nlil tools." },
+  
+  cards: {
+    github: { title: 'Open source', sub: 'my repos, pulled live.', pill: 'open source', word: 'GITHUB', color: '#2bb8ff' },
+    scripts: { title: 'Scripts & tools', sub: 'little CLIs i made, free to grab.', pill: 'cli & tools', word: 'SCRIPTS', color: '#7a5cff' },
+  },
+  
+  scripts: [
+    { id: 'backly', name: 'backly', tag: 'code backup CLI', lang: 'JavaScript', description: 'A tiny zero-dependency code backup CLI — register paths, snapshot them to a local/external dir as tar archives. Pretty terminal output, no fuss.', install: 'npx backly add .', url: '#', src: '/scripts/backly.js', pinned: true },
+  ],
   socials: [
     { label: 'Twitter / X', url: '#' },
     { label: 'GitHub', url: '#' },
@@ -123,6 +133,12 @@ export function normalizeConfig(raw) {
     footer: merge(d.footer, c.footer),
     projectsPage: merge(d.projectsPage, c.projectsPage),
     changelogPage: merge(d.changelogPage, c.changelogPage),
+    scriptsPage: merge(d.scriptsPage, c.scriptsPage),
+    scripts: arr(c.scripts, d.scripts),
+    cards: {
+      github: merge(d.cards.github, c.cards && c.cards.github),
+      scripts: merge(d.cards.scripts, c.cards && c.cards.scripts),
+    },
     onboarding: merge(d.onboarding, c.onboarding),
     socials: Array.isArray(c.socials) ? c.socials : d.socials,
     projects: arr(c.projects, d.projects),

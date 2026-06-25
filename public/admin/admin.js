@@ -32,6 +32,14 @@ const DEFAULTS = {
   onboarding: { hi: 'welcome to', title: 'zoop', em: '.', sub: 'a couple optional extras. you can change em anytime up top.', soundLabel: 'sound', soundDesc: 'blips, bloops & flowing water', notifLabel: 'notifs', notifDesc: 'the occasional friendly nudge', enter: 'enter →' },
   projectsPage: { title: "Everything\nI've made." },
   changelogPage: { title: "Changelog.", buttonText: "Changelog →" },
+  scriptsPage: { title: "scripts &\nlil tools." },
+  scripts: [
+    { id: 'backly', name: 'backly', tag: 'code backup CLI', lang: 'JavaScript', description: 'A tiny zero-dependency code backup CLI.', install: 'npx backly add .', url: '#', src: '/scripts/backly.js', pinned: true },
+  ],
+  cards: {
+    github: { title: 'Open source', sub: 'my repos, pulled live.', pill: 'open source', word: 'GITHUB', color: '#2bb8ff' },
+    scripts: { title: 'Scripts & tools', sub: 'little CLIs i made, free to grab.', pill: 'cli & tools', word: 'SCRIPTS', color: '#7a5cff' },
+  },
   socials: [
     { label: 'Twitter / X', url: '#' }, { label: 'GitHub', url: '#' }, { label: 'Dribbble', url: '#' }, { label: 'LinkedIn', url: '#' },
   ],
@@ -199,6 +207,38 @@ function buildForm() {
     <div class="hint">Changelog entries displayed on the /changelog page.</div>
     <div id="list-changelog"></div><button class="add" type="button" data-add="changelog">+ changelog entry</button>
 
+    <h2>Scripts page</h2>
+    <div class="field"><label>Title (new line = line break)</label><textarea data-path="scriptsPage.title">${esc(c.scriptsPage?.title || 'scripts &\nlil tools.')}</textarea></div>
+
+    <h2>Scripts &amp; tools</h2>
+    <div class="hint">Shown on /scripts. Put the source file in <code>public/scripts/</code> and point "Source path" at it (e.g. <code>/scripts/backly.js</code>).</div>
+    <div id="list-scripts"></div><button class="add" type="button" data-add="scripts">+ script</button>
+
+    <h2>Home cards (under Work)</h2>
+    <div class="hint">The two expanding panels → /github and /scripts.</div>
+    <div class="card">
+      <div class="row two">
+        <div class="field"><label>GitHub · title</label><input type="text" data-path="cards.github.title" value="${attr(c.cards?.github?.title || 'Open source')}"></div>
+        <div class="field"><label>GitHub · subtitle</label><input type="text" data-path="cards.github.sub" value="${attr(c.cards?.github?.sub || '')}"></div>
+      </div>
+      <div class="row three">
+        <div class="field"><label>Pill</label><input type="text" data-path="cards.github.pill" value="${attr(c.cards?.github?.pill || '')}"></div>
+        <div class="field"><label>Watermark word</label><input type="text" data-path="cards.github.word" value="${attr(c.cards?.github?.word || 'GITHUB')}"></div>
+        <div class="field"><label>Color</label><input type="color" data-path="cards.github.color" value="${attr(c.cards?.github?.color || '#2bb8ff')}"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row two">
+        <div class="field"><label>Scripts · title</label><input type="text" data-path="cards.scripts.title" value="${attr(c.cards?.scripts?.title || 'Scripts & tools')}"></div>
+        <div class="field"><label>Scripts · subtitle</label><input type="text" data-path="cards.scripts.sub" value="${attr(c.cards?.scripts?.sub || '')}"></div>
+      </div>
+      <div class="row three">
+        <div class="field"><label>Pill</label><input type="text" data-path="cards.scripts.pill" value="${attr(c.cards?.scripts?.pill || '')}"></div>
+        <div class="field"><label>Watermark word</label><input type="text" data-path="cards.scripts.word" value="${attr(c.cards?.scripts?.word || 'SCRIPTS')}"></div>
+        <div class="field"><label>Color</label><input type="color" data-path="cards.scripts.color" value="${attr(c.cards?.scripts?.color || '#7a5cff')}"></div>
+      </div>
+    </div>
+
     <h2>Onboarding (first visit)</h2>
     <div class="row three">
       <div class="field"><label>Greeting</label><input type="text" data-path="onboarding.hi" value="${attr(c.onboarding.hi)}"></div>
@@ -216,7 +256,7 @@ function buildForm() {
     </div>
     <div class="field"><label>Enter button</label><input type="text" data-path="onboarding.enter" value="${attr(c.onboarding.enter)}"></div>
   `;
-  renderNav(); renderTitlePhrases(); renderMarquee(); renderProjects(); renderColumns(); renderStats(); renderSocials(); renderChangelog();
+  renderNav(); renderTitlePhrases(); renderMarquee(); renderProjects(); renderColumns(); renderStats(); renderSocials(); renderChangelog(); renderScripts();
   
   const col = $('#accent-color'), txt = $('#accent-text');
   col.addEventListener('input', () => { txt.value = col.value; });
@@ -294,6 +334,36 @@ function rowProject(p = {}) {
   c.dataset.id = p.id || '';
   mountDel(c);
   mountOrd(c, 'project-row');
+  return c;
+}
+function renderScripts() {
+  const m = $('#list-scripts'); if (!m) return; m.innerHTML = '';
+  (cfg.scripts || []).forEach((s) => m.appendChild(rowScript(s)));
+}
+function rowScript(s = {}) {
+  const c = document.createElement('div'); c.className = 'card script-row';
+  c.innerHTML = `<button class="del" type="button">✕</button>
+    <div class="ord">
+      <button class="up" type="button">▲</button>
+      <button class="down" type="button">▼</button>
+    </div>
+    <div class="row three">
+      <div class="field"><label>Name</label><input type="text" data-field="name" value="${attr(s.name)}"></div>
+      <div class="field"><label>Tag (short)</label><input type="text" data-field="tag" value="${attr(s.tag)}"></div>
+      <div class="field"><label>Language</label><input type="text" data-field="lang" value="${attr(s.lang)}" placeholder="JavaScript"></div>
+    </div>
+    <div class="field"><label>Description</label><textarea data-field="description">${esc(s.description)}</textarea></div>
+    <div class="row two">
+      <div class="field"><label>Install / run command</label><input type="text" data-field="install" value="${attr(s.install)}" placeholder="npx backly add ."></div>
+      <div class="field"><label>Source path (in /public)</label><input type="text" data-field="src" value="${attr(s.src)}" placeholder="/scripts/backly.js"></div>
+    </div>
+    <div class="row two" style="align-items:end">
+      <div class="field" style="margin:0"><label>Repo URL</label><input type="text" data-field="url" value="${attr(s.url || '#')}"></div>
+      <label class="pinrow"><input type="checkbox" data-field="pinned" ${s.pinned ? 'checked' : ''}> Pinned</label>
+    </div>`;
+  c.dataset.id = s.id || '';
+  mountDel(c);
+  mountOrd(c, 'script-row');
   return c;
 }
 function renderColumns() {
@@ -374,6 +444,7 @@ function addRow(kind) {
   if (kind === 'stats') $('#list-stats').appendChild(rowStat({ format: 'plain' }));
   if (kind === 'socials') $('#list-socials').appendChild(rowSocial({ url: '#' }));
   if (kind === 'changelog') $('#list-changelog').appendChild(rowChangelog({ version: 'v1.0.0', date: new Date().toISOString().split('T')[0], title: '', isRelease: false, text: '' }));
+  if (kind === 'scripts') $('#list-scripts').appendChild(rowScript({ url: '#', pinned: false }));
 }
 
 
@@ -399,6 +470,10 @@ function collect() {
     return { value: raw !== '' && !Number.isNaN(num) ? num : raw, label: field(r, 'label'), format: field(r, 'format') };
   });
   out.socials = [...document.querySelectorAll('.social-row')].map((r) => ({ label: field(r, 'label'), url: field(r, 'url') })).filter((s) => s.label.trim());
+  out.scripts = [...document.querySelectorAll('.script-row')].map((r) => {
+    const name = field(r, 'name');
+    return { id: r.dataset.id || slug(name), name, tag: field(r, 'tag'), lang: field(r, 'lang'), description: field(r, 'description'), install: field(r, 'install'), src: field(r, 'src'), url: field(r, 'url'), pinned: field(r, 'pinned') };
+  }).filter((s) => s.name.trim());
   out.changelog = [...document.querySelectorAll('.changelog-row')].map((r) => ({
     version: field(r, 'version'),
     date: field(r, 'date'),

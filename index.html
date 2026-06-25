@@ -260,14 +260,34 @@
       </section>
 
       
-      <a class="gh-bar" href="/github" data-cursor="zoom" data-reveal>
-        <span class="gh-bar__icon" aria-hidden="true">
-          <svg viewBox="0 0 16 16" width="22" height="22" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        </span>
-        <span class="gh-bar__text"></span>
-        <span class="gh-bar__cta"></span>
-        <span class="gh-bar__glow" aria-hidden="true"></span>
-      </a>
+      <div class="split" id="split" data-reveal>
+        <a class="split__panel is-active" data-card="github" href="/github" data-cursor="zoom" style="--pc:#2bb8ff">
+          <span class="split__word" aria-hidden="true">GITHUB</span>
+          <span class="split__glow" aria-hidden="true"></span>
+          <span class="split__inner">
+            <span class="split__icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="34" height="34" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            </span>
+            <span class="split__pill">open source</span>
+            <span class="split__title">Open source</span>
+            <span class="split__sub">my repos, pulled live.</span>
+            <span class="split__explore">Explore <span>→</span></span>
+          </span>
+        </a>
+        <a class="split__panel" data-card="scripts" href="/scripts" data-cursor="zoom" style="--pc:#7a5cff">
+          <span class="split__word" aria-hidden="true">SCRIPTS</span>
+          <span class="split__glow" aria-hidden="true"></span>
+          <span class="split__inner">
+            <span class="split__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3.5" width="20" height="17" rx="3"/><path d="M6.5 9.5l3 2.5-3 2.5"/><path d="M12.5 15h5"/></svg>
+            </span>
+            <span class="split__pill">cli &amp; tools</span>
+            <span class="split__title">Scripts &amp; tools</span>
+            <span class="split__sub">little CLIs i made, free to grab.</span>
+            <span class="split__explore">Explore <span>→</span></span>
+          </span>
+        </a>
+      </div>
 
       
       <section class="about" id="about">
@@ -344,6 +364,9 @@
             <span class="contact__changelog-dot">·</span>
             <span class="contact__changelog-label">Changelog →</span>
           </a>
+          <a class="contact__changelog-pill" href="/scripts" data-cursor="zoom">
+            <span class="contact__changelog-label">Scripts &amp; tools →</span>
+          </a>
         </div>
         <div class="contact__socials">
           <a href="#" data-cursor="zoom">Twitter / X</a>
@@ -400,6 +423,16 @@
         
       </div>
       <div class="projects-page__foot">— end of repos —</div>
+    </section>
+
+    <section class="projects-page scripts-page" id="scripts-page" aria-hidden="true" data-lenis-prevent>
+      <div class="projects-page__bar">
+        <span class="projects-page__idx">Scripts &amp; tools</span>
+        <button class="projects-page__close" id="scripts-close" type="button" data-cursor="zoom">Back ✕</button>
+      </div>
+      <h2 class="projects-page__title" id="scripts-page-title">scripts &amp; lil tools.</h2>
+      <div class="scripts-page__list" id="scripts-list"></div>
+      <div class="projects-page__foot">— that's all of em —</div>
     </section>
 
     

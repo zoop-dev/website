@@ -326,6 +326,17 @@ new IntersectionObserver((entries, io) => {
 }, { rootMargin: '700px 0px' }).observe(playEl);
 
 
+(() => {
+  const split = document.getElementById('split');
+  if (!split) return;
+  const panels = [...split.querySelectorAll('.split__panel')];
+  panels.forEach((p) => p.addEventListener('pointerenter', () => {
+    if (window.matchMedia('(max-width: 720px)').matches) return;
+    panels.forEach((x) => x.classList.toggle('is-active', x === p));
+  }));
+})();
+
+
 const boopsEl = document.getElementById('boops');
 const boopsNum = document.getElementById('boops-n');
 const boopsPill = boopsEl && boopsEl.querySelector('.boops__pill');
@@ -894,6 +905,128 @@ function closeChangelog(push = true) {
 document.getElementById('changelog-close').addEventListener('click', () => closeChangelog());
 
 
+const isScriptsPath = () => /^\/scripts(\.html)?\/?$/.test(location.pathname);
+const attr = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+
+
+let hljsPromise;
+function loadHljs() {
+  if (!hljsPromise) hljsPromise = new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+    s.onload = () => resolve(window.hljs);
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
+  return hljsPromise;
+}
+
+function buildScriptsList(items) {
+  const list = document.getElementById('scripts-list');
+  if (!list) return;
+  list.innerHTML = (items || []).map((s) => `
+    <article class="scr" data-src="${attr(s.src)}" data-lang="${attr((s.lang || '').toLowerCase())}">
+      <div class="scr__head">
+        <h3 class="scr__name">${esc(s.name)}</h3>
+        ${s.lang ? `<span class="scr__lang">${esc(s.lang)}</span>` : ''}
+      </div>
+      ${s.tag ? `<p class="scr__tag">${esc(s.tag)}</p>` : ''}
+      ${s.description ? `<p class="scr__desc">${esc(s.description)}</p>` : ''}
+      ${s.install ? `<div class="scr__cmd"><code>${esc(s.install)}</code><button class="scr__copy" type="button" data-copy="${attr(s.install)}" data-cursor="zoom">copy</button></div>` : ''}
+      <div class="scr__actions">
+        ${s.src ? `<button class="scr__srcbtn" type="button" aria-expanded="false" data-cursor="zoom">view source ▾</button>` : ''}
+        ${s.url && s.url !== '#' ? `<a class="scr__link" href="${attr(s.url)}" target="_blank" rel="noopener" data-cursor="zoom">repo ↗</a>` : ''}
+        ${s.src ? `<a class="scr__dl" href="${attr(s.src)}" download data-cursor="zoom">download ↓</a>` : ''}
+      </div>
+      <div class="scr__source" hidden><button class="scr__copysrc" type="button" data-cursor="zoom">copy</button><pre><code class="scr__code"></code></pre></div>
+    </article>`).join('');
+  bindCursor(list);
+}
+
+async function loadScriptSource(card) {
+  if (card.dataset.loaded || !card.dataset.src) return;
+  card.dataset.loaded = '1';
+  const codeEl = card.querySelector('.scr__code');
+  try {
+    const txt = await fetch(card.dataset.src).then((r) => r.text());
+    codeEl.textContent = txt;                       
+    const hl = await loadHljs();
+    if (hl) { codeEl.className = 'scr__code hljs'; hl.highlightElement(codeEl); }
+  } catch { codeEl.textContent = '// could not load source'; }
+}
+
+document.getElementById('scripts-list').addEventListener('click', (e) => {
+  const copyBtn = e.target.closest('.scr__copy');
+  if (copyBtn) { navigator.clipboard?.writeText(copyBtn.dataset.copy).then(() => toast('copied 📋'), () => {}); return; }
+  const srcBtn = e.target.closest('.scr__srcbtn');
+  if (srcBtn) {
+    const card = srcBtn.closest('.scr');
+    const box = card.querySelector('.scr__source');
+    const open = box.hasAttribute('hidden');
+    if (open) {
+      box.removeAttribute('hidden');
+      loadScriptSource(card);
+      gsap.from(box, { height: 0, opacity: 0, duration: 0.4, ease: 'power2.out', onComplete: () => gsap.set(box, { height: 'auto' }) });
+    } else {
+      box.setAttribute('hidden', '');
+    }
+    srcBtn.setAttribute('aria-expanded', String(open));
+    srcBtn.textContent = open ? 'hide source ▴' : 'view source ▾';
+    return;
+  }
+  const copySrc = e.target.closest('.scr__copysrc');
+  if (copySrc) {
+    const code = copySrc.closest('.scr__source').querySelector('.scr__code');
+    navigator.clipboard?.writeText(code.textContent).then(() => toast('source copied 📋'), () => {});
+  }
+});
+
+function openScripts(push = true) {
+  if (pageOpen || transition.active) return;
+  pageOpen = true;
+  routing = true;
+  sound.whoosh();
+  transition.setColors(siteConfig.accent);
+  transition.run(() => {
+    if (push && location.pathname !== '/scripts') history.pushState({ scripts: true }, '', '/scripts');
+    const page = document.getElementById('scripts-page');
+    buildScriptsList(siteConfig.scripts);
+    lenis.stop();
+    closeCtx();
+    page.classList.add('is-open');
+    page.setAttribute('aria-hidden', 'false');
+    page.scrollTop = 0;
+    page.getBoundingClientRect();
+    routing = false;
+    gsap.killTweensOf([page, '.scr']);
+    gsap.set(page, { yPercent: 0, y: 0 });
+    gsap.timeline({ defaults: { ease: 'expo.out' } })
+      .from(page.querySelector('.projects-page__bar'), { yPercent: -40, opacity: 0, duration: 0.6 }, 0)
+      .from(page.querySelector('.projects-page__title'), { yPercent: 40, opacity: 0, duration: 0.8 }, 0.05)
+      .from(page.querySelectorAll('.scr'), { y: 30, opacity: 0, duration: 0.7, stagger: 0.08 }, 0.1);
+  });
+}
+
+function closeScripts(push = true) {
+  if (!pageOpen || transition.active) return;
+  pageOpen = false;
+  routing = true;
+  sound.whoosh();
+  transition.setColors(siteConfig.accent);
+  transition.run(() => {
+    if (push && location.pathname === '/scripts') history.pushState({}, '', '/');
+    const page = document.getElementById('scripts-page');
+    gsap.killTweensOf(page);
+    page.classList.remove('is-open');
+    page.setAttribute('aria-hidden', 'true');
+    lenis.start();
+    routing = false;
+  });
+}
+
+document.getElementById('scripts-close').addEventListener('click', () => closeScripts());
+
+
 let githubFetched = false;
 
 async function fetchGithubData() {
@@ -1017,6 +1150,13 @@ document.body.addEventListener('click', (e) => {
     if (pageOpen && document.getElementById('projects-page').classList.contains('is-open')) closeProjects(false);
     openGithub();
   }
+  const scLink = e.target.closest('a[href="/scripts"], a[href="/scripts.html"]');
+  if (scLink) {
+    e.preventDefault();
+    document.body.classList.remove('menu-open');
+    if (pageOpen && document.getElementById('projects-page').classList.contains('is-open')) closeProjects(false);
+    openScripts();
+  }
 });
 
 const isGithubPath = () => /^\/github(\.html)?\/?$/.test(location.pathname);
@@ -1027,27 +1167,33 @@ function openInitialRoute() {
   if (isProjectsPath()) openProjects(false);
   else if (isChangelogPath()) openChangelog(false);
   else if (isGithubPath()) openGithub(false);
+  else if (isScriptsPath()) openScripts(false);
 }
 
 
 window.addEventListener('popstate', () => {
   const isChangelog = isChangelogPath();
   const isGithub = isGithubPath();
+  const isScripts = isScriptsPath();
   const isProj = isProjectsPath();
-  
+
   const clPage = document.getElementById('changelog-page');
   const ghPage = document.getElementById('github-page');
+  const scPage = document.getElementById('scripts-page');
   const projPage = document.getElementById('projects-page');
-  
+
   if (isChangelog) {
     if (!clPage.classList.contains('is-open')) openChangelog(false);
   } else if (isGithub) {
     if (!ghPage.classList.contains('is-open')) openGithub(false);
+  } else if (isScripts) {
+    if (!scPage.classList.contains('is-open')) openScripts(false);
   } else if (isProj) {
     if (!projPage.classList.contains('is-open')) openProjects(false);
   } else {
     if (clPage.classList.contains('is-open')) closeChangelog(false);
     if (ghPage.classList.contains('is-open')) closeGithub(false);
+    if (scPage.classList.contains('is-open')) closeScripts(false);
     if (projPage.classList.contains('is-open')) closeProjects(false);
   }
 });
@@ -1058,8 +1204,10 @@ const sbThumb = document.getElementById('scrollbar-thumb');
 let sbDrag = false, sbDownY = 0, sbDownScroll = 0, sbTrack = 0, sbThumbH = 40;
 function scrollCtx() {
   if (pageOpen) {
-    const isChangelog = document.getElementById('changelog-page')?.classList.contains('is-open');
-    const pg = document.getElementById(isChangelog ? 'changelog-page' : 'projects-page');
+    const open = ['changelog-page', 'github-page', 'scripts-page', 'projects-page']
+      .map((id) => document.getElementById(id))
+      .find((el) => el && el.classList.contains('is-open')) || document.getElementById('projects-page');
+    const pg = open;
     return { scroll: pg.scrollTop, limit: pg.scrollHeight - pg.clientHeight, view: pg.clientHeight, set: (v) => { pg.scrollTop = v; } };
   }
   const limit = lenis.limit || (document.documentElement.scrollHeight - window.innerHeight);
@@ -1224,6 +1372,17 @@ function applyConfig(config) {
   
   const clTitle = document.getElementById('changelog-page-title');
   if (clTitle) clTitle.innerHTML = esc(config.changelogPage?.title || 'Changelog.').replace(/\n/g, '<br>');
+  const scTitle = document.getElementById('scripts-page-title');
+  if (scTitle) scTitle.innerHTML = esc(config.scriptsPage?.title || 'scripts & lil tools.').replace(/\n/g, '<br>');
+  
+  const setCard = (key, card) => {
+    const p = document.querySelector(`.split__panel[data-card="${key}"]`);
+    if (!p || !card) return;
+    if (card.color) p.style.setProperty('--pc', card.color);
+    const put = (sel, v) => { const el = p.querySelector(sel); if (el && v != null) el.textContent = v; };
+    put('.split__title', card.title); put('.split__sub', card.sub); put('.split__pill', card.pill); put('.split__word', card.word);
+  };
+  if (config.cards) { setCard('github', config.cards.github); setCard('scripts', config.cards.scripts); }
   
   const ob = config.onboarding;
   setText('.onboard__hi', ob.hi);
