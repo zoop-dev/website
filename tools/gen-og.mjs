@@ -37,7 +37,6 @@ const template = ({ lines, sub, url }) => `<!doctype html><html lang="en"><head>
     filter:blur(8px); }
   .shadow { position:absolute; left:9%; bottom:-30px; width:82%; height:56px; border-radius:50%;
     background:radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,.7), transparent 70%); filter:blur(7px); }
-  /* glass marble body */
   .orb { position:absolute; inset:0; border-radius:50%;
     background:
       radial-gradient(circle at 70% 80%, rgba(140,225,255,.95) 0%, rgba(140,225,255,0) 26%),
@@ -49,31 +48,25 @@ const template = ({ lines, sub, url }) => `<!doctype html><html lang="en"><head>
       inset 0 0 0 2px rgba(255,255,255,.06),
       0 60px 140px rgba(43,184,255,.26);
     filter:saturate(1.1); }
-  /* soft fresnel rim */
   .orb::before { content:''; position:absolute; inset:0; border-radius:50%;
     background:radial-gradient(circle at 50% 50%, transparent 62%, rgba(150,225,255,.32) 85%, rgba(255,255,255,.85) 95%, transparent 100%);
     mix-blend-mode:screen; }
-  /* chromatic dispersion ring */
   .orb::after { content:''; position:absolute; inset:-2px; border-radius:50%;
     background:conic-gradient(from 120deg, rgba(43,216,255,0), rgba(43,216,255,.42), rgba(122,92,255,.3), rgba(255,61,166,.36), rgba(43,216,255,0));
     mix-blend-mode:screen;
     -webkit-mask:radial-gradient(circle at 50% 50%, transparent 80%, #000 92%); mask:radial-gradient(circle at 50% 50%, transparent 80%, #000 92%); }
-  /* glossy top-left reflection */
   .gloss { position:absolute; left:18%; top:12%; width:46%; height:34%; border-radius:50%;
     background:radial-gradient(circle at 38% 32%, rgba(255,255,255,.95), rgba(255,255,255,.18) 42%, transparent 68%);
     transform:rotate(-18deg); filter:blur(2px); mix-blend-mode:screen; }
   .spec { position:absolute; left:30%; top:24%; width:60px; height:60px; border-radius:50%;
     background:radial-gradient(circle, #fff 0%, rgba(255,255,255,0) 70%); filter:blur(1px); }
-  /* inner refraction caustic */
   .caustic { position:absolute; left:32%; top:56%; width:128px; height:84px; border-radius:50%;
     background:radial-gradient(circle, rgba(120,210,255,.55), transparent 70%); filter:blur(9px); mix-blend-mode:screen; }
-  /* concentric ripples */
   .ripples { position:absolute; inset:0; border-radius:50%; mix-blend-mode:screen; opacity:.55;
     background:
       repeating-radial-gradient(circle at 38% 32%, rgba(190,235,255,.10) 0 4px, transparent 4px 18px),
       repeating-radial-gradient(circle at 72% 76%, rgba(120,200,255,.08) 0 6px, transparent 6px 22px);
     -webkit-mask:radial-gradient(circle at 50% 50%, #000 74%, transparent 93%); mask:radial-gradient(circle at 50% 50%, #000 74%, transparent 93%); }
-  /* organic glass texture */
   .tex { position:absolute; inset:0; border-radius:50%; mix-blend-mode:overlay; opacity:.45; background-size:cover;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='452' height='452'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='3' seed='7'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
     -webkit-mask:radial-gradient(circle at 50% 50%, #000 72%, transparent 92%); mask:radial-gradient(circle at 50% 50%, #000 72%, transparent 92%); }
