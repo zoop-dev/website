@@ -234,9 +234,6 @@ ul { list-style: none; }
   display: flex; align-items: flex-end; justify-content: center; padding: var(--pad);
 }
 .loader__inner { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: .5rem 1rem; }
-
-.kao-banner { position: relative; z-index: 5; display: flex; justify-content: center; padding: 0 var(--pad) clamp(2rem, 6vw, 4rem); }
-.kao-banner:empty { display: none; }
 .loader__name { font-family: var(--font-display); font-size: clamp(3rem, 14vw, 11rem); line-height: .85; font-weight: 600; }
 
 .loader__o { display: inline-block; width: .74em; height: .74em; vertical-align: -.04em; margin: 0 .03em; }
@@ -566,12 +563,10 @@ section { position: relative; padding: 0 var(--pad); }
 .split__explore span { transition: transform 0.3s var(--ease); }
 .split__panel:hover .split__explore span { transform: translateX(4px); }
 @media (max-width: 720px) {
-  .split { flex-direction: column; height: auto; gap: 0.8rem; }
-  .split__panel { flex: none !important; min-height: 220px; }
-  .split__panel .split__inner { opacity: 1; }
-  .split__sub, .split__explore { opacity: 1; transform: none; }
-  .split__glow, .split__panel:not(.is-active) .split__word { opacity: 0.04; }
-  .split__panel .split__icon { box-shadow: 0 14px 55px color-mix(in srgb, var(--pc) 35%, transparent); }
+  
+  .split { flex-direction: column; height: clamp(460px, 86vh, 640px); gap: 0.6rem; }
+  .split__panel { flex: 1; }
+  .split__panel.is-active { flex: 6; }
 }
 
 .contact__socials { display: flex; gap: clamp(1rem, 4vw, 2.5rem); justify-content: center; flex-wrap: wrap; margin-top: clamp(2.5rem, 6vw, 4rem); }

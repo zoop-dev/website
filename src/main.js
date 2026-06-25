@@ -326,14 +326,29 @@ new IntersectionObserver((entries, io) => {
 }, { rootMargin: '700px 0px' }).observe(playEl);
 
 
+
 (() => {
   const split = document.getElementById('split');
   if (!split) return;
   const panels = [...split.querySelectorAll('.split__panel')];
+  const mobile = window.matchMedia('(max-width: 720px)');
   panels.forEach((p) => p.addEventListener('pointerenter', () => {
-    if (window.matchMedia('(max-width: 720px)').matches) return;
+    if (mobile.matches) return;
     panels.forEach((x) => x.classList.toggle('is-active', x === p));
   }));
+  
+  
+  
+  const updateActive = () => {
+    if (!mobile.matches) return;
+    const r = split.getBoundingClientRect();
+    const prog = (window.innerHeight / 2 - r.top) / (r.height || 1);
+    const idx = Math.min(panels.length - 1, Math.max(0, Math.floor(prog * panels.length)));
+    panels.forEach((x, i) => x.classList.toggle('is-active', i === idx));
+  };
+  lenis.on('scroll', updateActive);
+  window.addEventListener('resize', updateActive);
+  updateActive();
 })();
 
 
