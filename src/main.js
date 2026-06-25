@@ -7,7 +7,6 @@ import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 import { Flip } from 'gsap/Flip';
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, Flip);
 import HeroManager from './webgl/HeroManager.js';
-import Fluid from './webgl/Fluid.js';
 import { defaultConfig, normalizeConfig } from './config.default.js';
 import { sound } from './sound.js';
 import { notify } from './notify.js';
@@ -17,6 +16,8 @@ import { liquidType } from './lib/liquid.js';
 import { mountScene, mountBehind } from './lib/anima-scene.js';
 import { quality } from './lib/quality.js';
 import { hexToRgba } from './lib/motion.js';
+import { interpolate as flubber } from 'flubber';
+import shapePaths from './shapes-paths.json';
 import { initWebMCP } from './webmcp.js';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -30,7 +31,18 @@ window.scrollTo(0, 0);
 
 const heroStyleOverride = new URLSearchParams(location.search).get('hero'); 
 const hero = new HeroManager(document.getElementById('hero-gl'), heroStyleOverride || 'glass');
-const play = new Fluid(document.getElementById('play-gl'));
+
+
+let play = null, playAccent = null, playLoading = false;
+function ensureFluid() {
+  if (play || playLoading) return;
+  playLoading = true;
+  import('./webgl/Fluid.js').then(({ default: Fluid }) => {
+    play = new Fluid(document.getElementById('play-gl'));
+    if (playAccent) play.setAccent(playAccent);
+    play.resize();
+  });
+}
 
 
 const lenis = new Lenis({
@@ -293,7 +305,7 @@ window.addEventListener('pointermove', (e) => {
   lastActivity = performance.now();
   hero.setMouse(pointer.nx, pointer.ny);
 
-  if (overPlay) {
+  if (overPlay && play) {
     const r = play.canvas.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const y = 1 - (e.clientY - r.top) / r.height;   
@@ -328,8 +340,12 @@ window.addEventListener('pointerup', () => {
   dragging = false;
   gsap.to(hero.uniforms.uPress, { value: 0, duration: 0.7, ease: 'elastic.out(1, 0.4)' });
 });
-playEl.addEventListener('pointerenter', () => { overPlay = true; prevPlay.set = false; });
+playEl.addEventListener('pointerenter', () => { overPlay = true; prevPlay.set = false; ensureFluid(); });
 playEl.addEventListener('pointerleave', () => { overPlay = false; prevPlay.set = false; });
+
+new IntersectionObserver((entries, io) => {
+  if (entries.some((e) => e.isIntersecting)) { ensureFluid(); io.disconnect(); }
+}, { rootMargin: '700px 0px' }).observe(playEl);
 
 
 const boopsEl = document.getElementById('boops');
@@ -1159,7 +1175,8 @@ function applyConfig(config) {
   if (!heroStyleOverride && config.heroStyle) hero.setStyle(config.heroStyle);
   document.documentElement.style.setProperty('--accent', config.accent);
   hero.setAccent(config.accent);
-  play.setAccent(config.accent);
+  playAccent = config.accent;
+  if (play) play.setAccent(config.accent);
 
   
   if (config.meta.title) document.title = config.meta.title;
@@ -1353,6 +1370,8 @@ const ctxActions = {
     toast('boop ✦');
   },
   ink() {
+    ensureFluid();
+    if (!play) return;
     for (let i = 0; i < 24; i++) {
       play.splat(Math.random(), Math.random(), (Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14);
     }
@@ -1632,6 +1651,7 @@ window.addEventListener('keydown', (e) => {
 function revealSite() {
   if (revealed || bootFailed) return;
   revealed = true;
+  stopLoaderMorph();
   sound.reveal();
   gsap.to(hero.uniforms.uReveal, { value: 1, duration: 1.6, ease: 'power2.out' });
   gsap.to(loaderEl, { yPercent: -100, duration: 1.1, ease: 'expo.inOut', onComplete: () => { loaderEl.style.display = 'none'; } });
@@ -1645,6 +1665,7 @@ function revealSite() {
 
 const firstVisit = !lite && (() => { try { return !localStorage.getItem('zoop-onboarded'); } catch { return false; } })();
 function showOnboard() {
+  stopLoaderMorph();
   const ob = document.getElementById('onboard');
   if (!ob) { revealSite(); return; }
   ob.classList.add('is-open'); ob.setAttribute('aria-hidden', 'false');
@@ -1689,9 +1710,60 @@ async function preloadShapes() {
   })));
 }
 
+
+
+
+let loaderMorphTimers = [];
+let loaderMorphing = false;
+function startLoaderMorph() {
+  const os = [...document.querySelectorAll('.loader__name .loader__o')];
+  if (!os.length || typeof gsap === 'undefined' || !shapePaths.length) return;
+  loaderMorphing = true;
+  const NS = 'http://www.w3.org/2000/svg';
+  os.forEach((o, oi) => {
+    o.innerHTML = '';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 320 320');
+    const path = document.createElementNS(NS, 'path');
+    svg.appendChild(path); o.appendChild(svg);
+    let cur, bag = [];
+    const pick = () => {
+      if (bag.length < 2) bag = [...shapePaths.keys()].sort(() => Math.random() - 0.5);
+      let n = bag.pop();
+      if (n === cur) n = bag.pop();
+      return n;
+    };
+    cur = pick();
+    path.setAttribute('d', shapePaths[cur]);
+    const step = () => {
+      if (!loaderMorphing) return;
+      const next = pick();
+      let interp;
+      try { interp = flubber(shapePaths[cur], shapePaths[next], { maxSegmentLength: 14 }); }
+      catch { interp = () => shapePaths[next]; }
+      const proxy = { t: 0 };
+      gsap.to(proxy, {
+        t: 1, duration: 0.11, ease: 'none',
+        onUpdate: () => path.setAttribute('d', interp(proxy.t)),
+        onComplete: () => {
+          cur = next;
+          if (loaderMorphing) loaderMorphTimers.push(setTimeout(step, 15 + Math.random() * 35));
+        },
+      });
+    };
+    loaderMorphTimers.push(setTimeout(step, 120 + oi * 70));
+  });
+}
+function stopLoaderMorph() {
+  loaderMorphing = false;
+  loaderMorphTimers.forEach(clearTimeout);
+  loaderMorphTimers = [];
+}
+
 async function boot() {
   applyConfig(normalizeConfig(defaultConfig));
   initWebMCP();
+  startLoaderMorph();
   await preloadShapes();
   measureWork(); measureMarquee();
   setupReveals();
@@ -1723,7 +1795,7 @@ async function boot() {
 }
 
 
-window.addEventListener('resize', () => { hero.resize(); play.resize(); measureWork(); measureSpine(); ScrollTrigger.refresh(); });
+window.addEventListener('resize', () => { hero.resize(); if (play) play.resize(); measureWork(); measureSpine(); ScrollTrigger.refresh(); });
 
 let hidden = document.hidden;
 document.addEventListener('visibilitychange', () => { hidden = document.hidden; });
@@ -1758,7 +1830,7 @@ function raf(t) {
     const inHero = hr.bottom > vh * 0.4;
     
     hero.setDim(inHero ? 0.95 : 0.5);
-    if (playOn) play.render();
+    if (playOn && play) play.render();
     else hero.render(time);
   }
   requestAnimationFrame(raf);

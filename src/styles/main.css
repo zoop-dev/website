@@ -235,6 +235,10 @@ ul { list-style: none; }
 }
 .loader__inner { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: .5rem 1rem; }
 .loader__name { font-family: var(--font-display); font-size: clamp(3rem, 14vw, 11rem); line-height: .85; font-weight: 600; }
+
+.loader__o { display: inline-block; width: .74em; height: .74em; vertical-align: -.04em; margin: 0 .03em; }
+.loader__o svg { width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 0 14px var(--md-sys-color-primary)); }
+.loader__o path { fill: var(--md-sys-color-primary); }
 .loader__count { font-family: var(--font-mono); font-size: clamp(1rem, 3vw, 1.6rem); color: var(--fg-dim); }
 .loader__bar { grid-column: 1 / -1; height: 1px; background: var(--line); position: relative; overflow: hidden; }
 .loader__bar span { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); background: var(--accent); }
