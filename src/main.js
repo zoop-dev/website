@@ -12,7 +12,6 @@ import { sound } from './sound.js';
 import { notify } from './notify.js';
 import { transition } from './lib/transition.js';
 import { magnetic, tilt } from './lib/interactions.js';
-import { liquidType } from './lib/liquid.js';
 import { mountScene, mountBehind } from './lib/anima-scene.js';
 import { quality } from './lib/quality.js';
 import { hexToRgba } from './lib/motion.js';
@@ -1995,8 +1994,6 @@ buildSpine();
 buildScrollArrow();
 revealIndices();
 runTitleLoop();
-
-if (quality.liquid) liquidType('.hero__title, .contact__title, .work__title', () => lenis.velocity);
 
 quality.onDowngrade(() => hero.setQualityScale(0.7));
 quality.watchFPS(() => !hidden && revealed && !routing && !pageOpen);
