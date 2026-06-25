@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { stripContent } from './strip-lib.mjs';
 
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'scripts', '.claude', 'moved', 'tools']);
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist']);
 const EXTS = new Set(['js', 'mjs', 'css', 'html', 'htm']);
 
 function walk(dir) {

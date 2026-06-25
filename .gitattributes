@@ -1,12 +1,4 @@
-# Strip comments from source as it's committed/pushed (working tree stays
-# commented). Filter command is set per-clone by scripts/setup-filter.mjs.
 *.js   filter=stripcomments
 *.mjs  filter=stripcomments
 *.css  filter=stripcomments
 *.html filter=stripcomments
-
-# leave tooling, vendored skill assets, build templates and the old tree alone
-scripts/**  !filter
-.claude/**  !filter
-moved/**    !filter
-tools/**    !filter

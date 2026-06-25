@@ -1,6 +1,6 @@
-// Generates OG images (1200x630) from one shared template — the home card plus
-// one per route. Add a route to ROUTES and re-run:  node tools/gen-og.mjs
-// (renders with headless Chrome -> public/og*.png)
+
+
+
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';

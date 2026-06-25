@@ -1,7 +1,7 @@
-// One-shot: trace the 35 M3 shape PNGs into SVG path strings (viewBox 0 0 320
-// 320) and write src/shapes-paths.json. The loader uses these to MORPH the two
-// o's between shapes (flubber), instead of cross-fading raster masks.
-//   run: node tools/trace-shapes.mjs
+
+
+
+
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 const require = createRequire(import.meta.url);
@@ -24,7 +24,7 @@ function trace(file) {
     Jimp.read(file).then((img) => {
       const { width: w, height: h } = img.bitmap;
       img.scan(0, 0, w, h, function (x, y, idx) {
-        const v = this.bitmap.data[idx + 3] > 128 ? 0 : 255; // alpha -> black shape on white
+        const v = this.bitmap.data[idx + 3] > 128 ? 0 : 255; 
         this.bitmap.data[idx] = this.bitmap.data[idx + 1] = this.bitmap.data[idx + 2] = v;
         this.bitmap.data[idx + 3] = 255;
       });
