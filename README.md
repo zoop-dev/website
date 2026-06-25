@@ -6,10 +6,12 @@ interactive, real-time, slightly overcomplicated. lots of shaders. probably lags
 
 ## stack
 
-- **three.js** — glass hero + fluid ink playground (gpu stable-fluids)
+- **three.js** — glass hero
 - **gsap + lenis** — motion n smooth scroll
 - **vite** — build
 - **cloudflare pages** — hosting, with functions + KV for an editable site config
+
+the ink playground is [pavel dobryakov's webgl fluid simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation) (MIT), vendored at `public/fluid.js`.
 
 ## routes
 

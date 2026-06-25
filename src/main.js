@@ -33,15 +33,14 @@ const heroStyleOverride = new URLSearchParams(location.search).get('hero');
 const hero = new HeroManager(document.getElementById('hero-gl'), heroStyleOverride || 'glass');
 
 
-let play = null, playAccent = null, playLoading = false;
+
+let fluidLoaded = false;
 function ensureFluid() {
-  if (play || playLoading) return;
-  playLoading = true;
-  import('./webgl/Fluid.js').then(({ default: Fluid }) => {
-    play = new Fluid(document.getElementById('play-gl'));
-    if (playAccent) play.setAccent(playAccent);
-    play.resize();
-  });
+  if (fluidLoaded) return;
+  fluidLoaded = true;
+  const s = document.createElement('script');
+  s.src = '/fluid.js';
+  document.body.appendChild(s);
 }
 
 
@@ -305,27 +304,6 @@ window.addEventListener('pointermove', (e) => {
   lastActivity = performance.now();
   hero.setMouse(pointer.nx, pointer.ny);
 
-  if (overPlay && play) {
-    const r = play.canvas.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width;
-    const y = 1 - (e.clientY - r.top) / r.height;   
-    const boost = dragging ? 2.4 : 1;
-    const dx = ((e.movementX || 0) / r.width) * boost;
-    const dy = (-(e.movementY || 0) / r.height) * boost;
-    
-    if (prevPlay.set) {
-      const dist = Math.hypot(x - prevPlay.x, y - prevPlay.y);
-      const steps = Math.min(32, Math.max(1, Math.ceil(dist / 0.012)));
-      for (let i = 1; i <= steps; i++) {
-        const tt = i / steps;
-        play.splat(prevPlay.x + (x - prevPlay.x) * tt, prevPlay.y + (y - prevPlay.y) * tt, dx, dy);
-      }
-    } else {
-      play.splat(x, y, dx, dy);
-    }
-    sound.water(Math.min(1, Math.hypot(dx, dy) * 18));   
-    prevPlay.x = x; prevPlay.y = y; prevPlay.set = true;
-  }
 });
 window.addEventListener('pointerdown', (e) => {
   dragging = true;
@@ -1175,8 +1153,6 @@ function applyConfig(config) {
   if (!heroStyleOverride && config.heroStyle) hero.setStyle(config.heroStyle);
   document.documentElement.style.setProperty('--accent', config.accent);
   hero.setAccent(config.accent);
-  playAccent = config.accent;
-  if (play) play.setAccent(config.accent);
 
   
   if (config.meta.title) document.title = config.meta.title;
@@ -1371,10 +1347,7 @@ const ctxActions = {
   },
   ink() {
     ensureFluid();
-    if (!play) return;
-    for (let i = 0; i < 24; i++) {
-      play.splat(Math.random(), Math.random(), (Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14);
-    }
+    setTimeout(() => window.fluidSplats && window.fluidSplats(24), 60);
     toast('splash 🌊');
   },
   roll() {
@@ -1652,6 +1625,9 @@ function revealSite() {
   if (revealed || bootFailed) return;
   revealed = true;
   stopLoaderMorph();
+  
+  lenis.scrollTo(0, { immediate: true, force: true });
+  window.scrollTo(0, 0);
   sound.reveal();
   gsap.to(hero.uniforms.uReveal, { value: 1, duration: 1.6, ease: 'power2.out' });
   gsap.to(loaderEl, { yPercent: -100, duration: 1.1, ease: 'expo.inOut', onComplete: () => { loaderEl.style.display = 'none'; } });
@@ -1795,7 +1771,7 @@ async function boot() {
 }
 
 
-window.addEventListener('resize', () => { hero.resize(); if (play) play.resize(); measureWork(); measureSpine(); ScrollTrigger.refresh(); });
+window.addEventListener('resize', () => { hero.resize(); measureWork(); measureSpine(); ScrollTrigger.refresh(); });
 
 let hidden = document.hidden;
 document.addEventListener('visibilitychange', () => { hidden = document.hidden; });
@@ -1829,15 +1805,15 @@ function raf(t) {
     const hr = heroEl.getBoundingClientRect();
     const inHero = hr.bottom > vh * 0.4;
     
+    
     hero.setDim(inHero ? 0.95 : 0.5);
-    if (playOn && play) play.render();
-    else hero.render(time);
+    if (!playOn) hero.render(time);
   }
   requestAnimationFrame(raf);
 }
 
 
-window.addEventListener('load', () => { measureWork(); measureMarquee(); measureSpine(); ScrollTrigger.refresh(); });
+window.addEventListener('load', () => { measureWork(); measureMarquee(); measureSpine(); ScrollTrigger.refresh(); lenis.scrollTo(0, { immediate: true, force: true }); window.scrollTo(0, 0); });
 window.addEventListener('resize', measureMarquee);
 boot();
 buildSpine();
